@@ -25,7 +25,9 @@ module.exports = {
   },
   rules: {
     // Include .prettierrc.js rules
-    'prettier/prettier': [ 'error', {}, {
+    'prettier/prettier': [ 'error', {
+      "endOfLine": "auto"
+    }, {
       usePrettierrc: true
     } ],
     // We will use TypeScript's types for component props instead
