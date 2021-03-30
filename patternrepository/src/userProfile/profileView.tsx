@@ -22,6 +22,8 @@ const items = [
 const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
     const { user } = useContext(UserContext);
 
+    const image: string | null = user?.avatar ? user.avatar : noAvatar;
+
     return (
         <div style={{ maxWidth: '60%', margin: '0px auto' }}>
             This is how other users see you profile. Click{' '}
@@ -33,20 +35,27 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
                 here
             </Button>{' '}
             to edit your profile.
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <div style={{ width: '40%' }}>
-                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                        <img src={noAvatar} alt="avatar" width="100px" height="100px" />
-                        <h1 style={{ alignSelf: 'center' }}>{`${user?.username}`}</h1>
-                    </div>
-                    <p>Patterns: 0</p>
-                    <p>Repositories: 0</p>
-                    <p>Followers: 0</p>
-                    <p>Follows: 0</p>
+            <div style={{ width: '100%', marginBottom: '20px' }}>
+                <UncontrolledCarousel items={items} />
+            </div>
+            <div>
+                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                    <img src={image} alt="avatar" width="100px" height="100px" />
+                    <h1
+                        style={{ alignSelf: 'center', marginLeft: 'auto', marginRight: 'auto' }}
+                    >{`${user?.username}`}</h1>
+                    <Button
+                        onClick={() => {}}
+                        color="info"
+                        style={{ height: '2em', padding: '0px 10px' }}
+                    >
+                        Follow
+                    </Button>
                 </div>
-                <div style={{ width: '60%' }}>
-                    <UncontrolledCarousel items={items} />
-                </div>
+                <p>Patterns: 0</p>
+                <p>Repositories: 0</p>
+                <p>Followers: 0</p>
+                <p>Follows: 0</p>
             </div>
             <h2>Recent patterns</h2>
             <div>You have no patterns</div>

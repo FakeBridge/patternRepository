@@ -24,6 +24,8 @@ const UserProvider: React.FC<PropsType> = ({ children }) => {
                         uid: signedUser?.uid,
                         email: signedUser?.email,
                         username: signedUser?.username,
+                        avatar: signedUser?.avatar,
+                        description: signedUser?.description,
                     },
                 });
             } else {

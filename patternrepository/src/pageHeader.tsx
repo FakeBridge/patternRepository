@@ -10,11 +10,17 @@ import {
     DropdownMenu,
     DropdownItem,
 } from 'reactstrap';
+import { auth } from './firebase';
 
 import { UserContext } from './providers/userProvider';
 
 const PageHeader: React.FC = () => {
     const { user } = useContext(UserContext);
+
+    const logOutHandler = (event: any) => {
+        event.preventDefault();
+        auth.signOut();
+    };
 
     return (
         <div>
@@ -38,7 +44,7 @@ const PageHeader: React.FC = () => {
                         <DropdownMenu right>
                             <DropdownItem href={`/profile/${user?.uid}`}>Profile</DropdownItem>
                             <DropdownItem divider />
-                            <DropdownItem>Log out</DropdownItem>
+                            <DropdownItem onClick={logOutHandler}>Log out</DropdownItem>
                         </DropdownMenu>
                     </UncontrolledDropdown>
                 </Nav>

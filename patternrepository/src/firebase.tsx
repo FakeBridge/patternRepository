@@ -1,16 +1,9 @@
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import 'firebase/storage';
 
-const firebaseConfig = {
-    apiKey: 'AIzaSyBSJOrJyHwTWwFW06_SQkOcNOExcFUuVdE',
-    authDomain: 'patternrepository-e8c44.firebaseapp.com',
-    projectId: 'patternrepository-e8c44',
-    storageBucket: 'patternrepository-e8c44.appspot.com',
-    messagingSenderId: '658185200448',
-    appId: '1:658185200448:web:9f55f3f53845c2d94cd0a5',
-    measurementId: 'G-V4Z0TXZV4C',
-};
+import firebaseConfig from './firebaseConfig';
 
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
@@ -21,14 +14,17 @@ if (!firebase.apps.length) {
 // firebase.initializeApp();
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
+export const storage = firebase.storage();
 
 const getUserDocument = async (uid: any) => {
     if (!uid) return null;
     try {
         const userDocument = await firestore.doc(`users/${uid}`).get();
+        const userAvatar = await storage.ref(`/avatars/${uid}`).getDownloadURL();
         return {
             uid,
             ...userDocument.data(),
+            avatar: userAvatar,
         };
     } catch (error) {
         console.error('Error fetching user', error);

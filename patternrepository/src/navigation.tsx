@@ -11,11 +11,7 @@ import { UserContext } from './providers/userProvider';
 const Navigation: React.FC = () => {
     const { user } = useContext(UserContext);
     if (!user) {
-        return (
-            <BrowserRouter>
-                <Route path="/" component={Login} />
-            </BrowserRouter>
-        );
+        return <Login />;
     }
     return (
         <BrowserRouter>
