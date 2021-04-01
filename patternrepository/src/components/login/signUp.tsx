@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Input, Label } from 'reactstrap';
-import { auth, generateUserDocument } from '../firebase';
+import { auth, generateUserDocument } from '../../logic/firebase';
 
 const SignUp: React.FC = () => {
     const [username, setUsername] = React.useState('');

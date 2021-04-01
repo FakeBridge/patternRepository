@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import { Button, UncontrolledCarousel } from 'reactstrap';
 
-import { UserContext } from '../providers/userProvider';
+import { UserContext } from '../../logic/providers/userProvider';
 
-import noAvatar from '../images/no-image-icon.png';
+import noAvatar from '../../design/images/no-image-icon.png';
 
 interface PropsType {
     openEdit: (open: boolean) => void;

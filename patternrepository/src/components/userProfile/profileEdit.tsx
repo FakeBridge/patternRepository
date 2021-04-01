@@ -1,11 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Alert, Button, Input, Label } from 'reactstrap';
 
-import { UserContext } from '../providers/userProvider';
+import { UserContext } from '../../logic/providers/userProvider';
 
-import useStorage from '../hooks/useStorage';
+import useStorage from '../../logic/hooks/useStorage';
 
-import { firestore } from '../firebase';
+import { firestore } from '../../logic/firebase';
 
 interface PropsType {
     openEdit: (open: boolean) => void;

@@ -10,9 +10,9 @@ import {
     DropdownMenu,
     DropdownItem,
 } from 'reactstrap';
-import { auth } from './firebase';
+import { auth } from '../logic/firebase';
 
-import { UserContext } from './providers/userProvider';
+import { UserContext } from '../logic/providers/userProvider';
 
 const PageHeader: React.FC = () => {
     const { user } = useContext(UserContext);

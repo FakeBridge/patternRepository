@@ -3,10 +3,11 @@ import { Route, BrowserRouter } from 'react-router-dom';
 import Login from './login/index';
 import PageHeader from './pageHeader';
 import Profile from './userProfile';
+import PatternList from './patternList';
 
-import Error from './components/errorCard';
+import Error from './generalComponents/errorCard';
 
-import { UserContext } from './providers/userProvider';
+import { UserContext } from '../logic/providers/userProvider';
 
 const Navigation: React.FC = () => {
     const { user } = useContext(UserContext);
@@ -16,6 +17,7 @@ const Navigation: React.FC = () => {
     return (
         <BrowserRouter>
             <Route path="/" component={PageHeader} />
+            <Route exact path="/" component={PatternList} />
             <Route exact path="/profile" component={Error} />
             <Route exact path="/profile/:userID" component={Profile} />
         </BrowserRouter>
