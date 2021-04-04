@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import AddPattern from './addPattern';
+import List from './list';
 
 const PatternList: React.FC = () => {
     const [modalOpen, setModalOpen] = useState<boolean>(false);
@@ -17,7 +18,7 @@ const PatternList: React.FC = () => {
                 </Button>
             </div>
 
-            <p>HI</p>
+            <List />
 
             <Modal isOpen={modalOpen} toggle={modalToggle}>
                 <ModalBody>

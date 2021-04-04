@@ -1,21 +1,17 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 
 import { storage } from '../firebase';
 
-import { UserContext } from '../providers/userProvider';
-
 const useStorage = (file: File | null) => {
-    const { user } = useContext(UserContext);
-
     const [progress, setProgress] = useState<number>(0);
     const [error, setError] = useState<string | null>(null);
     const [url, setUrl] = useState<string | null>(null);
 
     // runs every time the file value changes
-    const uploadImage = () => {
+    const uploadImage = (storageName: string, pictureName: string) => {
         if (file) {
             // storage ref
-            const storageRef = storage.ref(`avatars/${user?.uid}`);
+            const storageRef = storage.ref(`${storageName}/${pictureName}`);
 
             storageRef.put(file).on(
                 'state_changed',

@@ -107,7 +107,10 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
                         }
                     />
                     {file && (
-                        <Button size="sm" onClick={uploadImage}>
+                        <Button
+                            size="sm"
+                            onClick={() => uploadImage('avatars', user?.uid ? user.uid : '')}
+                        >
                             Save image{' '}
                         </Button>
                     )}

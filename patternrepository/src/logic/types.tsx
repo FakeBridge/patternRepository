@@ -7,3 +7,11 @@ type userInfo = {
     avatar: string | null;
     description: string | null;
 };
+
+export type pattern = {
+    id: string | null;
+    title: string | null;
+    description: string | null;
+    difficulty: string | null;
+    owner: string | null;
+};
