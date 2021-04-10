@@ -41,8 +41,6 @@ const PatternList: React.FC<PropsType> = ({ closeModal }) => {
         [newOpen],
     );
 
-    console.log(id);
-
     const HandlePatternImageChange = (selectedFile: File | null) => {
         if (selectedFile) {
             if (imageTypes.includes(selectedFile.type)) {
@@ -94,14 +92,30 @@ const PatternList: React.FC<PropsType> = ({ closeModal }) => {
 
     const removePaternPicture = (index: number) => {
         const newPictures: File[] = [...patternPictures.filter((_, i) => i !== index)];
-        // TO DO: remove from storage
-        setPatternPictures(newPictures);
+        const fileToRemove: File = patternPictures[index];
+        const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
+        storageRef
+            .delete()
+            .then(() => {
+                setPatternPictures(newPictures);
+            })
+            .catch((err) => {
+                setError(err.message);
+            });
     };
 
     const removeWorkPicture = (index: number) => {
         const newPictures: File[] = [...finishedWorkPictures.filter((_, i) => i !== index)];
-        // TO DO: remove from storage
-        setFinishedWorkPictures(newPictures);
+        const fileToRemove: File = finishedWorkPictures[index];
+        const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
+        storageRef
+            .delete()
+            .then(() => {
+                setFinishedWorkPictures(newPictures);
+            })
+            .catch((err) => {
+                setError(err.message);
+            });
     };
 
     const handleSubmit = () => {
@@ -123,6 +137,33 @@ const PatternList: React.FC<PropsType> = ({ closeModal }) => {
             .catch((errorData) => {
                 setError(errorData?.message);
             });
+    };
+
+    const handleCancel = () => {
+        let newError = 'Errors:';
+        newError = '';
+        patternPictures.forEach((picture) => {
+            storage
+                .ref(`patternImages/${id}/${picture.name}`)
+                .delete()
+                .catch((err: Error) => {
+                    newError.concat(err.message);
+                });
+        });
+        finishedWorkPictures.forEach((picture) => {
+            storage
+                .ref(`finishedWorkImages/${id}/${picture.name}`)
+                .delete()
+                .catch((err: Error) => {
+                    newError.concat(err.message);
+                });
+        });
+        if (newError.length) {
+            setError(newError);
+        } else {
+            setNewOpen(true);
+            closeModal();
+        }
     };
 
     //  const { url } = useStorage(file);
@@ -245,13 +286,7 @@ const PatternList: React.FC<PropsType> = ({ closeModal }) => {
 
             {error && <p>{error}</p>}
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <Button
-                    color="info"
-                    onClick={() => {
-                        setNewOpen(true);
-                        closeModal();
-                    }}
-                >
+                <Button color="info" onClick={handleCancel}>
                     Cancel
                 </Button>
 

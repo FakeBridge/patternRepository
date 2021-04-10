@@ -10,7 +10,7 @@ const List: React.FC = () => {
     const [patterns, setPatterns] = useState<patternType[]>([]);
     console.log('HI');
 
-    const b = useMemo(
+    useMemo(
         () => async () => {
             const ref = firestore.collection(`patterns`);
             const snap = await ref.where('owner', '==', user?.uid).get();
@@ -41,7 +41,7 @@ const List: React.FC = () => {
         [user],
     );
 
-    console.log(b, patterns);
+    console.log(patterns);
 
     return (
         <div>
