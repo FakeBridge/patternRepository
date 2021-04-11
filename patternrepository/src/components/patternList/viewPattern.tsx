@@ -1,17 +1,16 @@
-import React, { useState, useContext } from 'react';
-import { Button, Label } from 'reactstrap';
+import React, { useContext } from 'react';
+import { Button } from 'reactstrap';
 import { UserContext } from '../../logic/providers/userProvider';
 import { pattern as patternType } from '../../logic/types';
 
 interface PropsType {
     openEdit: (open: boolean) => void;
     closeModal: () => void;
+    currentPattern: patternType | null;
 }
 
-const ViewPattern: React.FC<PropsType> = ({ openEdit, closeModal }) => {
+const ViewPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern }) => {
     const { user } = useContext(UserContext);
-
-    const [pattern] = useState<patternType | null>(null);
 
     const handleClose = () => {
         closeModal();
@@ -19,7 +18,7 @@ const ViewPattern: React.FC<PropsType> = ({ openEdit, closeModal }) => {
 
     return (
         <div style={{}}>
-            {pattern?.owner === user?.uid && (
+            {currentPattern?.owner === user?.uid && (
                 <p>
                     This is how other users see this patterns. Click{' '}
                     <Button
@@ -33,42 +32,41 @@ const ViewPattern: React.FC<PropsType> = ({ openEdit, closeModal }) => {
                 </p>
             )}
 
-            <Label for="title">Title</Label>
+            <h1>{currentPattern ? currentPattern.title : 'Untitled'}</h1>
 
-            <Label for="tags">Tags</Label>
+            <h3>Tags</h3>
 
-            <Label for="difficulty">Difficulty</Label>
+            <h3>{currentPattern?.difficulty}</h3>
 
-            <Label for="books">Books</Label>
+            <h3>Books</h3>
 
-            <Label for="description">Description</Label>
+            <h3>Description</h3>
+            <div>{currentPattern?.description}</div>
 
-            <Label for="description" style={{ display: 'block' }}>
-                Pattern pictures
-            </Label>
+            <h2 style={{ display: 'block' }}>Pattern pictures</h2>
             <>
-                {/* pattern.patternImages.map((picture, index) => (
-                        <div key={picture.name}>
-                            <Label>{picture.name}</Label>
-                            <Button color="danger" onClick={() => removePaternPicture(index)}>
-                                x
-                            </Button>
-                        </div>
-                    )) */}
+                {currentPattern?.patternImages.map((picture) => (
+                    <img
+                        key={picture.name}
+                        src={picture.url}
+                        alt={picture.name}
+                        width="100px"
+                        height="100px"
+                    />
+                ))}
             </>
 
-            <Label for="description" style={{ display: 'block' }}>
-                Finished works
-            </Label>
+            <h2 style={{ display: 'block' }}>Finished works</h2>
             <>
-                {/* finishedWorkPictures.map((picture, index) => (
-                        <div key={picture.name}>
-                            <Label>{picture.name}</Label>
-                            <Button color="danger" onClick={() => removeWorkPicture(index)}>
-                                x
-                            </Button>
-                        </div>
-                    )) */}
+                {currentPattern?.finishedWorkImages.map((picture) => (
+                    <img
+                        key={picture.name}
+                        src={picture.url}
+                        alt={picture.name}
+                        width="100px"
+                        height="100px"
+                    />
+                ))}
             </>
 
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>

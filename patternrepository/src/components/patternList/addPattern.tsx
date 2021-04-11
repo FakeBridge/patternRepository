@@ -1,11 +1,13 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
+import Select from 'react-select';
 import { UserContext } from '../../logic/providers/userProvider';
 
 import { storage } from '../../logic/firebase';
 import PatternService from '../../logic/services/patternServices';
+import TagService from '../../logic/services/tagServices';
 
-import { patternToAdd, fileWithUrl } from '../../logic/types';
+import { patternToAdd, fileWithUrl, tag, tagToAdd } from '../../logic/types';
 
 interface PropsType {
     closeModal: () => void;
@@ -15,7 +17,9 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
     const { user } = useContext(UserContext);
 
     const [title, setTitle] = useState<string>('');
-    const [tags, setTags] = useState<any>([]);
+    const [tags, setTags] = useState<tag[]>([]);
+    const [allTags, setAllTags] = useState<tag[]>([]);
+    const [newTag, setNewTag] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [difficulty, setDifficulty] = useState<number>(3);
 
@@ -39,6 +43,30 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                 })}`,
         [newOpen],
     );
+
+    const onTagDataChange = (items: any) => {
+        let loadedTags: tag[] = [];
+        loadedTags = [];
+
+        items.docs.forEach((item: any) => {
+            const { id: tagId } = item;
+            const data = item.data();
+
+            loadedTags.push({
+                id: tagId,
+                label: data.label,
+                value: tagId,
+            });
+        });
+
+        setAllTags(loadedTags);
+    };
+
+    useEffect(() => {
+        const unsubscribe = TagService.getAll().orderBy('label', 'asc').onSnapshot(onTagDataChange);
+
+        return () => unsubscribe();
+    }, []);
 
     const HandlePatternImageChange = (selectedFile: File | null) => {
         if (selectedFile) {
@@ -142,6 +170,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                 url: picture.url,
             })),
             owner: user?.uid ? user.uid : null,
+            tags: tags.map((t) => t.id),
         };
 
         PatternService.set(id, data)
@@ -152,6 +181,26 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             .catch((e) => {
                 setError(e?.message);
             });
+    };
+
+    const handleTagAddition = () => {
+        if (newTag) {
+            const data: tagToAdd = {
+                label: newTag,
+            };
+
+            const tagId = (new Date().getTime() / 1000).toFixed(0).toString();
+
+            TagService.set(`${tagId}`, data)
+                .then(() => {
+                    setAllTags([...allTags, { id: tagId, value: tagId, label: newTag }]);
+                    setTags([...tags, { id: tagId, value: tagId, label: newTag }]);
+                    setNewTag('');
+                })
+                .catch((e) => {
+                    setError(e?.message);
+                });
+        }
     };
 
     const handleCancel = () => {
@@ -198,18 +247,25 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
 
             <FormGroup>
                 <Label for="tags">Tags</Label>
-                <Input
-                    type="select"
-                    multiple
-                    name="patternTags"
-                    id="tags"
+                <Select
+                    options={allTags}
                     value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                >
-                    <option>Tag 1</option>
-                    <option>Tag 2 </option>
-                    <option>Tag 3</option>
-                </Input>
+                    isMulti
+                    backspaceRemovesValue
+                    inputValue={newTag}
+                    onKeyDown={(e) => {
+                        const enterKeyCode = 13;
+                        if (e.keyCode === enterKeyCode) {
+                            handleTagAddition();
+                        }
+                    }}
+                    onInputChange={(e) => {
+                        setNewTag(e);
+                    }}
+                    onChange={(e) => {
+                        setTags([...e]);
+                    }}
+                />
             </FormGroup>
 
             <FormGroup>

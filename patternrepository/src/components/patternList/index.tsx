@@ -6,8 +6,18 @@ import List from './list';
 import { pattern as patternType } from '../../logic/types';
 
 const PatternList: React.FC = () => {
+    const emptyPattern: patternType = {
+        id: '',
+        title: null,
+        description: null,
+        difficulty: 3,
+        owner: null,
+        patternImages: [],
+        finishedWorkImages: [],
+        tags: [],
+    };
     const [modalAddOpen, setModalAddOpen] = useState<boolean>(false);
-    const [currentPattern, setCurrentPattern] = useState<patternType | null>(null);
+    const [currentPattern, setCurrentPattern] = useState<patternType>(emptyPattern);
 
     const modalAddToggle = () => {
         setModalAddOpen(!modalAddOpen);
@@ -29,10 +39,10 @@ const PatternList: React.FC = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={currentPattern !== null} toggle={() => setCurrentPattern(null)}>
+            <Modal isOpen={currentPattern.id !== ''} toggle={() => setCurrentPattern(emptyPattern)}>
                 <ModalBody>
                     <PatternContainer
-                        closeModal={() => setCurrentPattern(null)}
+                        closeModal={() => setCurrentPattern(emptyPattern)}
                         currentPattern={currentPattern}
                     />
                 </ModalBody>

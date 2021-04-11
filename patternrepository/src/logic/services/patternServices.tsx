@@ -1,5 +1,5 @@
 import { firestore, auth } from '../firebase';
-import { pattern, patternToAdd } from '../types';
+import { patternToAdd } from '../types';
 
 const collectionRef = firestore.collection('/patterns');
 
@@ -18,7 +18,7 @@ const create = (data: patternToAdd) => {
     return collectionRef.add(data);
 };
 
-const update = (id: string, value: pattern) => {
+const update = (id: string, value: patternToAdd) => {
     return collectionRef.doc(id).update(value);
 };
 

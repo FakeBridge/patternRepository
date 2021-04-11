@@ -1,42 +1,67 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
+import Select from 'react-select';
 
 import { storage } from '../../logic/firebase';
+import PatternService from '../../logic/services/patternServices';
+import TagService from '../../logic/services/tagServices';
+
+import { pattern, patternToAdd, basicImage, tag as tagType, tagToAdd } from '../../logic/types';
 
 interface PropsType {
     openEdit: (open: boolean) => void;
+    closeModal: () => void;
+    currentPattern: pattern;
 }
 
-const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
-    const [title, setTitle] = useState<string | number | readonly string[] | undefined>('');
-    const [tags, setTags] = useState<any>([]);
-    const [description, setDescription] = useState<string | number | readonly string[] | undefined>(
-        '',
+const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern }) => {
+    const [title, setTitle] = useState<string>(currentPattern.title ? currentPattern.title : '');
+    const [tags, setTags] = useState<tagType[]>([]);
+    const [allTags, setAllTags] = useState<tagType[]>([]);
+    const [newTag, setNewTag] = useState<string>('');
+    const [description, setDescription] = useState<string>(
+        currentPattern.description ? currentPattern.description : '',
     );
-    const [difficulty, setDifficulty] = useState<string | number | readonly string[] | undefined>(
-        3,
+    const [difficulty, setDifficulty] = useState<number>(
+        currentPattern.difficulty ? currentPattern.difficulty : 3,
     );
 
-    const [newOpen, setNewOpen] = useState<boolean>(false);
-
-    const [patternPictures, setPatternPictures] = useState<File[]>([]);
-    const [finishedWorkPictures, setFinishedWorkPictures] = useState<File[]>([]);
+    const [patternImages, setPatternImages] = useState<basicImage[]>(
+        currentPattern.patternImages ? currentPattern.patternImages : [],
+    );
+    const [finishedWorkImages, setFinishedWorkImages] = useState<basicImage[]>(
+        currentPattern.finishedWorkImages ? currentPattern.finishedWorkImages : [],
+    );
 
     const [error, setError] = useState<string | null>(null);
 
     const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
 
-    const id = useMemo(
-        () =>
-            `${newOpen ? 'y' : ''}${(new Date().getTime() / 1000).toFixed(0)}${new Array(5)
-                .join()
-                .replace(/(.|$)/g, function () {
-                    return (Math.random() * 36)
-                        .toString(36)
-                        [Math.random() < 0.5 ? 'toString' : 'toUpperCase']();
-                })}`,
-        [newOpen],
-    );
+    const { id } = currentPattern;
+
+    const onTagDataChange = (items: any) => {
+        let loadedTags: tagType[] = [];
+        loadedTags = [];
+
+        items.docs.forEach((item: any) => {
+            const { id: tagId } = item;
+            const data = item.data();
+
+            loadedTags.push({
+                id: tagId,
+                label: data.label,
+                value: tagId,
+            });
+        });
+
+        setAllTags(loadedTags);
+    };
+
+    useEffect(() => {
+        const unsubscribe = TagService.getAll().orderBy('label', 'asc').onSnapshot(onTagDataChange);
+
+        return () => unsubscribe();
+    }, []);
 
     const HandlePatternImageChange = (selectedFile: File | null) => {
         if (selectedFile) {
@@ -53,8 +78,14 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                         (err) => {
                             setError(err.message);
                         },
+                        async () => {
+                            const downloadUrl = await storageRef.getDownloadURL();
+                            setPatternImages([
+                                ...patternImages,
+                                { name: selectedFile.name, url: downloadUrl },
+                            ]);
+                        },
                     );
-                    setPatternPictures([...patternPictures, selectedFile]);
                 }
             } else {
                 setError('Please use only select an image file (png or jpg)');
@@ -77,9 +108,14 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                         (err) => {
                             setError(err.message);
                         },
+                        async () => {
+                            const downloadUrl = await storageRef.getDownloadURL();
+                            setFinishedWorkImages([
+                                ...finishedWorkImages,
+                                { name: selectedFile.name, url: downloadUrl },
+                            ]);
+                        },
                     );
-
-                    setFinishedWorkPictures([...finishedWorkPictures, selectedFile]);
                 }
             } else {
                 setError('Please use only select an image file (png or jpg)');
@@ -88,13 +124,13 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
     };
 
     const removePaternPicture = (index: number) => {
-        const newPictures: File[] = [...patternPictures.filter((_, i) => i !== index)];
-        const fileToRemove: File = patternPictures[index];
+        const newPictures: basicImage[] = [...patternImages.filter((_, i) => i !== index)];
+        const fileToRemove: basicImage = patternImages[index];
         const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
         storageRef
             .delete()
             .then(() => {
-                setPatternPictures(newPictures);
+                setPatternImages(newPictures);
             })
             .catch((err) => {
                 setError(err.message);
@@ -102,25 +138,62 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
     };
 
     const removeWorkPicture = (index: number) => {
-        const newPictures: File[] = [...finishedWorkPictures.filter((_, i) => i !== index)];
-        const fileToRemove: File = finishedWorkPictures[index];
+        const newPictures: basicImage[] = [...finishedWorkImages.filter((_, i) => i !== index)];
+        const fileToRemove: basicImage = finishedWorkImages[index];
         const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
         storageRef
             .delete()
             .then(() => {
-                setFinishedWorkPictures(newPictures);
+                setFinishedWorkImages(newPictures);
             })
             .catch((err) => {
                 setError(err.message);
             });
     };
 
-    const handleSubmit = () => {};
+    const handleSubmit = () => {
+        const data: patternToAdd = {
+            title,
+            description,
+            difficulty,
+            patternImages,
+            finishedWorkImages,
+            tags: tags.map((t) => t.id),
+        };
+
+        PatternService.update(id, data)
+            .then(() => {
+                closeModal();
+            })
+            .catch((e) => {
+                setError(e?.message);
+            });
+    };
+
+    const handleTagAddition = () => {
+        if (newTag) {
+            const data: tagToAdd = {
+                label: newTag,
+            };
+
+            const tagId = (new Date().getTime() / 1000).toFixed(0).toString();
+
+            TagService.set(`${tagId}`, data)
+                .then(() => {
+                    setAllTags([...allTags, { id: tagId, value: tagId, label: newTag }]);
+                    setTags([...tags, { id: tagId, value: tagId, label: newTag }]);
+                    setNewTag('');
+                })
+                .catch((e) => {
+                    setError(e?.message);
+                });
+        }
+    };
 
     const handleCancel = () => {
         let newError = 'Errors:';
         newError = '';
-        patternPictures.forEach((picture) => {
+        patternImages.forEach((picture) => {
             storage
                 .ref(`patternImages/${id}/${picture.name}`)
                 .delete()
@@ -128,7 +201,7 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                     newError.concat(err.message);
                 });
         });
-        finishedWorkPictures.forEach((picture) => {
+        finishedWorkImages.forEach((picture) => {
             storage
                 .ref(`finishedWorkImages/${id}/${picture.name}`)
                 .delete()
@@ -139,7 +212,6 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
         if (newError.length) {
             setError(newError);
         } else {
-            setNewOpen(true);
             openEdit(false);
         }
     };
@@ -155,24 +227,31 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                     id="title"
                     placeholder="Enter title"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => setTitle(e.target.value ? e.target.value.toString() : '')}
                 />
             </FormGroup>
 
             <FormGroup>
                 <Label for="tags">Tags</Label>
-                <Input
-                    type="select"
-                    multiple
-                    name="patternTags"
-                    id="tags"
+                <Select
+                    options={allTags}
                     value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                >
-                    <option>Tag 1</option>
-                    <option>Tag 2 </option>
-                    <option>Tag 3</option>
-                </Input>
+                    isMulti
+                    backspaceRemovesValue
+                    inputValue={newTag}
+                    onKeyDown={(e) => {
+                        const enterKeyCode = 13;
+                        if (e.keyCode === enterKeyCode) {
+                            handleTagAddition();
+                        }
+                    }}
+                    onInputChange={(e) => {
+                        setNewTag(e);
+                    }}
+                    onChange={(e) => {
+                        setTags([...e]);
+                    }}
+                />
             </FormGroup>
 
             <FormGroup>
@@ -185,7 +264,7 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                     max={5}
                     step={1}
                     value={difficulty}
-                    onChange={(e) => setDifficulty(e.target.value)}
+                    onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
                 />
             </FormGroup>
 
@@ -206,7 +285,9 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                     id="description"
                     placeholder="Enter description"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) =>
+                        setDescription(e.target.value ? e.target.value.toString() : '')
+                    }
                 />
             </FormGroup>
 
@@ -215,10 +296,10 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                     Pattern pictures
                 </Label>
                 <>
-                    {patternPictures.map((picture, index) => (
+                    {patternImages.map((picture: basicImage, index) => (
                         <div key={picture.name}>
                             <Label>{picture.name}</Label>
-                            <img src={picture.name} alt="pattern" width="100px" height="100px" />
+                            <img src={picture.url} alt="pattern" width="100px" height="100px" />
                             <Button color="danger" onClick={() => removePaternPicture(index)}>
                                 x
                             </Button>
@@ -241,11 +322,11 @@ const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
                     Finished works
                 </Label>
                 <>
-                    {finishedWorkPictures.map((picture, index) => (
+                    {finishedWorkImages.map((picture, index) => (
                         <div key={picture.name}>
                             <Label>{picture.name}</Label>
                             <img
-                                src={picture.name}
+                                src={picture.url}
                                 alt="finishedWork"
                                 width="100px"
                                 height="100px"

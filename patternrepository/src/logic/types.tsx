@@ -15,22 +15,24 @@ export type basicUser = {
 };
 
 export type pattern = {
-    id: string | null;
+    id: string;
     title: string | null;
     description: string | null;
-    difficulty: number | null;
-    owner: string | null | basicUser;
+    difficulty: number;
+    owner?: string | null | basicUser;
     patternImages: basicImage[];
     finishedWorkImages: basicImage[];
+    tags?: tag[];
 };
 
 export type patternToAdd = {
     title: string | null;
     description: string | null;
     difficulty: number | null;
-    owner: string | null;
+    owner?: string | null;
     patternImages: basicImage[];
     finishedWorkImages: basicImage[];
+    tags?: string[];
 };
 
 export type basicImage = {
@@ -41,4 +43,14 @@ export type basicImage = {
 export type fileWithUrl = {
     file: File;
     url: string;
+};
+
+export type tag = {
+    id: string;
+    label: string;
+    value?: string;
+};
+
+export type tagToAdd = {
+    label: string;
 };
