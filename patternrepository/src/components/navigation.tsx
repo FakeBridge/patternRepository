@@ -17,8 +17,7 @@ const Navigation: React.FC = () => {
     return (
         <BrowserRouter>
             <Route path="/" component={PageHeader} />
-            <Route exact path="/" component={PatternList} />
-            <Route exact path="/patterns" component={PatternList} />
+            <Route exact path={['/', '/patterns']} component={PatternList} />
             <Route exact path="/profile" component={Error} />
             <Route exact path="/profile/:userID" component={Profile} />
         </BrowserRouter>

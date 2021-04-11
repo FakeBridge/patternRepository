@@ -1,55 +1,65 @@
-import React, { useState, useContext, useMemo } from 'react';
-import { firestore } from '../../logic/firebase';
-import { UserContext } from '../../logic/providers/userProvider';
+import React, { useState, useEffect } from 'react';
+import PatternService from '../../logic/services/patternServices';
 
-import { pattern as patternType } from '../../logic/types';
+import { pattern as patternType, basicImage } from '../../logic/types';
 
-const List: React.FC = () => {
-    const { user } = useContext(UserContext);
+interface PropsType {
+    setCurrentPattern: (pattern: patternType) => void;
+}
 
+const List: React.FC<PropsType> = ({ setCurrentPattern }) => {
     const [patterns, setPatterns] = useState<patternType[]>([]);
-    console.log('HI');
 
-    useMemo(
-        () => async () => {
-            const ref = firestore.collection(`patterns`);
-            const snap = await ref.where('owner', '==', user?.uid).get();
-            console.log('inside');
-            console.log(snap);
-            if (snap.empty) {
-                console.log('No matching documents.');
-                return;
-            }
+    const onDataChange = (items: any) => {
+        let loadedPatterns: patternType[] = [];
+        loadedPatterns = [];
 
-            let a: patternType[] = [];
-            a = [];
+        items.docs.forEach((item: any) => {
+            const { id } = item;
+            const data = item.data();
 
-            console.log(snap);
-
-            snap.forEach((doc) => {
-                console.log(doc.id, '=>', doc.data());
-                a.push({
-                    title: doc.data().title,
-                    description: doc.data().description,
-                    difficulty: doc.data().difficulty,
-                    owner: doc.data().owner,
-                    id: doc.id,
-                });
+            loadedPatterns.push({
+                id,
+                title: data.title,
+                description: data.description,
+                difficulty: data.difficulty,
+                owner: data.owner,
+                patternImages: data.patternImages,
+                finishedWorkImages: data.finishedWorkImages,
             });
-            setPatterns(a);
-        },
-        [user],
-    );
+        });
 
-    console.log(patterns);
+        setPatterns(loadedPatterns);
+    };
+
+    useEffect(() => {
+        const unsubscribe = PatternService.getAll()
+            .orderBy('title', 'asc')
+            .onSnapshot(onDataChange);
+
+        return () => unsubscribe();
+    }, []);
 
     return (
         <div>
             {patterns.map((pattern: patternType) => (
-                <div key={pattern.id}>{pattern.title}</div>
+                <div key={pattern.id} style={{ width: '33%', backgroundColor: 'aliceblue' }}>
+                    <button type="button" onClick={() => setCurrentPattern(pattern)}>
+                        Detail
+                    </button>
+                    <h2>{pattern.title}</h2>
+                    {pattern.finishedWorkImages.slice(0, 3).map((image: basicImage) => (
+                        <img
+                            key={image.name}
+                            src={image.url}
+                            alt={image.name}
+                            width="100px"
+                            height="100px"
+                        />
+                    ))}
+                    <p>{pattern.description?.slice(0, 250)}</p>
+                </div>
             ))}
-
-            <p>HI</p>
         </div>
     );
 };

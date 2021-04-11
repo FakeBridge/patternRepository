@@ -1,28 +1,26 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
-import { UserContext } from '../../logic/providers/userProvider';
 
 import { storage } from '../../logic/firebase';
-import PatternService from '../../logic/services/patternServices';
-
-import { patternToAdd, fileWithUrl } from '../../logic/types';
 
 interface PropsType {
-    closeModal: () => void;
+    openEdit: (open: boolean) => void;
 }
 
-const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
-    const { user } = useContext(UserContext);
-
-    const [title, setTitle] = useState<string>('');
+const EditPattern: React.FC<PropsType> = ({ openEdit }) => {
+    const [title, setTitle] = useState<string | number | readonly string[] | undefined>('');
     const [tags, setTags] = useState<any>([]);
-    const [description, setDescription] = useState<string>('');
-    const [difficulty, setDifficulty] = useState<number>(3);
+    const [description, setDescription] = useState<string | number | readonly string[] | undefined>(
+        '',
+    );
+    const [difficulty, setDifficulty] = useState<string | number | readonly string[] | undefined>(
+        3,
+    );
 
     const [newOpen, setNewOpen] = useState<boolean>(false);
 
-    const [patternPictures, setPatternPictures] = useState<fileWithUrl[]>([]);
-    const [finishedWorkPictures, setFinishedWorkPictures] = useState<fileWithUrl[]>([]);
+    const [patternPictures, setPatternPictures] = useState<File[]>([]);
+    const [finishedWorkPictures, setFinishedWorkPictures] = useState<File[]>([]);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -55,14 +53,8 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                         (err) => {
                             setError(err.message);
                         },
-                        async () => {
-                            const downloadUrl = await storageRef.getDownloadURL();
-                            setPatternPictures([
-                                ...patternPictures,
-                                { file: selectedFile, url: downloadUrl },
-                            ]);
-                        },
                     );
+                    setPatternPictures([...patternPictures, selectedFile]);
                 }
             } else {
                 setError('Please use only select an image file (png or jpg)');
@@ -85,14 +77,9 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                         (err) => {
                             setError(err.message);
                         },
-                        async () => {
-                            const downloadUrl = await storageRef.getDownloadURL();
-                            setFinishedWorkPictures([
-                                ...finishedWorkPictures,
-                                { file: selectedFile, url: downloadUrl },
-                            ]);
-                        },
                     );
+
+                    setFinishedWorkPictures([...finishedWorkPictures, selectedFile]);
                 }
             } else {
                 setError('Please use only select an image file (png or jpg)');
@@ -101,9 +88,9 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
     };
 
     const removePaternPicture = (index: number) => {
-        const newPictures: fileWithUrl[] = [...patternPictures.filter((_, i) => i !== index)];
-        const fileToRemove: fileWithUrl = patternPictures[index];
-        const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.file.name}`);
+        const newPictures: File[] = [...patternPictures.filter((_, i) => i !== index)];
+        const fileToRemove: File = patternPictures[index];
+        const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
         storageRef
             .delete()
             .then(() => {
@@ -115,9 +102,9 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
     };
 
     const removeWorkPicture = (index: number) => {
-        const newPictures: fileWithUrl[] = [...finishedWorkPictures.filter((_, i) => i !== index)];
-        const fileToRemove: fileWithUrl = finishedWorkPictures[index];
-        const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.file.name}`);
+        const newPictures: File[] = [...finishedWorkPictures.filter((_, i) => i !== index)];
+        const fileToRemove: File = finishedWorkPictures[index];
+        const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
         storageRef
             .delete()
             .then(() => {
@@ -128,38 +115,14 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             });
     };
 
-    const handleSubmit = () => {
-        const data: patternToAdd = {
-            title,
-            description,
-            difficulty,
-            patternImages: patternPictures.map((picture) => ({
-                name: picture.file.name,
-                url: picture.url,
-            })),
-            finishedWorkImages: finishedWorkPictures.map((picture) => ({
-                name: picture.file.name,
-                url: picture.url,
-            })),
-            owner: user?.uid ? user.uid : null,
-        };
-
-        PatternService.set(id, data)
-            .then(() => {
-                setNewOpen(true);
-                closeModal();
-            })
-            .catch((e) => {
-                setError(e?.message);
-            });
-    };
+    const handleSubmit = () => {};
 
     const handleCancel = () => {
         let newError = 'Errors:';
         newError = '';
         patternPictures.forEach((picture) => {
             storage
-                .ref(`patternImages/${id}/${picture.file.name}`)
+                .ref(`patternImages/${id}/${picture.name}`)
                 .delete()
                 .catch((err: Error) => {
                     newError.concat(err.message);
@@ -167,7 +130,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
         });
         finishedWorkPictures.forEach((picture) => {
             storage
-                .ref(`finishedWorkImages/${id}/${picture.file.name}`)
+                .ref(`finishedWorkImages/${id}/${picture.name}`)
                 .delete()
                 .catch((err: Error) => {
                     newError.concat(err.message);
@@ -177,13 +140,13 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             setError(newError);
         } else {
             setNewOpen(true);
-            closeModal();
+            openEdit(false);
         }
     };
 
     return (
         <div style={{}}>
-            <h1>Add a new pattern</h1>
+            <h1>Edit this pattern</h1>
 
             <FormGroup>
                 <Label for="title">Title</Label>
@@ -192,7 +155,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                     id="title"
                     placeholder="Enter title"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value ? e.target.value.toString() : '')}
+                    onChange={(e) => setTitle(e.target.value)}
                 />
             </FormGroup>
 
@@ -222,7 +185,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                     max={5}
                     step={1}
                     value={difficulty}
-                    onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
+                    onChange={(e) => setDifficulty(e.target.value)}
                 />
             </FormGroup>
 
@@ -243,9 +206,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                     id="description"
                     placeholder="Enter description"
                     value={description}
-                    onChange={(e) =>
-                        setDescription(e.target.value ? e.target.value.toString() : '')
-                    }
+                    onChange={(e) => setDescription(e.target.value)}
                 />
             </FormGroup>
 
@@ -255,8 +216,9 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                 </Label>
                 <>
                     {patternPictures.map((picture, index) => (
-                        <div key={picture.file.name}>
-                            <Label>{picture.file.name}</Label>
+                        <div key={picture.name}>
+                            <Label>{picture.name}</Label>
+                            <img src={picture.name} alt="pattern" width="100px" height="100px" />
                             <Button color="danger" onClick={() => removePaternPicture(index)}>
                                 x
                             </Button>
@@ -280,8 +242,14 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                 </Label>
                 <>
                     {finishedWorkPictures.map((picture, index) => (
-                        <div key={picture.file.name}>
-                            <Label>{picture.file.name}</Label>
+                        <div key={picture.name}>
+                            <Label>{picture.name}</Label>
+                            <img
+                                src={picture.name}
+                                alt="finishedWork"
+                                width="100px"
+                                height="100px"
+                            />
                             <Button color="danger" onClick={() => removeWorkPicture(index)}>
                                 x
                             </Button>
@@ -313,4 +281,4 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
     );
 };
 
-export default AddPattern;
+export default EditPattern;
