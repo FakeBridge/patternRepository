@@ -8,7 +8,7 @@ interface PropsType {
     currentPattern: pattern;
 }
 
-const PatternContainer: React.FC<PropsType> = ({ closeModal, currentPattern }) => {
+const PatternContainer: React.FC<PropsType> = React.memo(({ closeModal, currentPattern }) => {
     const [openEdit, setOpenEdit] = useState<boolean>(false);
 
     return (
@@ -29,6 +29,8 @@ const PatternContainer: React.FC<PropsType> = ({ closeModal, currentPattern }) =
             )}
         </>
     );
-};
+});
+
+PatternContainer.displayName = 'PatternContainer';
 
 export default PatternContainer;

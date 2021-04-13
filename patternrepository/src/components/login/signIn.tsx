@@ -1,20 +1,23 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button, Input, Label } from 'reactstrap';
 import { auth } from '../../logic/firebase';
 
 const SignIn: React.FC = () => {
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    const [error, setError] = React.useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const signInWithEmailAndPasswordHandler = (event: any) => {
-        event.preventDefault();
-        auth.signInWithEmailAndPassword(email, password).catch((errorData) => {
-            setError('Error signing in with password and email!');
-            console.error('Error signing in with password and email', errorData);
-        });
-    };
+    const signInWithEmailAndPasswordHandler = useCallback(
+        (event: any) => {
+            event.preventDefault();
+            auth.signInWithEmailAndPassword(email, password).catch((errorData) => {
+                setError('Error signing in with password and email!');
+                console.error('Error signing in with password and email', errorData);
+            });
+        },
+        [email, password],
+    );
 
     return (
         <div>

@@ -11,6 +11,7 @@ import { UserContext } from '../logic/providers/userProvider';
 
 const Navigation: React.FC = () => {
     const { user } = useContext(UserContext);
+
     if (!user) {
         return <Login />;
     }

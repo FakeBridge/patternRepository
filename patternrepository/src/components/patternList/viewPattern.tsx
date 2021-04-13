@@ -9,7 +9,7 @@ interface PropsType {
     currentPattern: patternType | null;
 }
 
-const ViewPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern }) => {
+const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, currentPattern }) => {
     const { user } = useContext(UserContext);
 
     const handleClose = () => {
@@ -41,7 +41,11 @@ const ViewPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
             <h3>Books</h3>
 
             <h3>Description</h3>
-            <div>{currentPattern?.description}</div>
+            <div
+                dangerouslySetInnerHTML={{
+                    __html: currentPattern?.description ? currentPattern.description : '',
+                }}
+            />
 
             <h2 style={{ display: 'block' }}>Pattern pictures</h2>
             <>
@@ -76,6 +80,8 @@ const ViewPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
             </div>
         </div>
     );
-};
+});
+
+ViewPattern.displayName = 'ViewPattern';
 
 export default ViewPattern;

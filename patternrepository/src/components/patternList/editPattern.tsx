@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
 import Select from 'react-select';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 import { storage } from '../../logic/firebase';
 import PatternService from '../../logic/services/patternServices';
@@ -14,7 +16,7 @@ interface PropsType {
     currentPattern: pattern;
 }
 
-const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern }) => {
+const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, currentPattern }) => {
     const [title, setTitle] = useState<string>(currentPattern.title ? currentPattern.title : '');
     const [tags, setTags] = useState<tagType[]>([]);
     const [allTags, setAllTags] = useState<tagType[]>([]);
@@ -32,6 +34,9 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
     const [finishedWorkImages, setFinishedWorkImages] = useState<basicImage[]>(
         currentPattern.finishedWorkImages ? currentPattern.finishedWorkImages : [],
     );
+
+    const [newPatternImages, setNewPatternImages] = useState<basicImage[]>([]);
+    const [newFinishedWorkImages, setNewFinishedWorkImages] = useState<basicImage[]>([]);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -80,8 +85,8 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
                         },
                         async () => {
                             const downloadUrl = await storageRef.getDownloadURL();
-                            setPatternImages([
-                                ...patternImages,
+                            setNewPatternImages([
+                                ...newPatternImages,
                                 { name: selectedFile.name, url: downloadUrl },
                             ]);
                         },
@@ -110,8 +115,8 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
                         },
                         async () => {
                             const downloadUrl = await storageRef.getDownloadURL();
-                            setFinishedWorkImages([
-                                ...finishedWorkImages,
+                            setNewFinishedWorkImages([
+                                ...newFinishedWorkImages,
                                 { name: selectedFile.name, url: downloadUrl },
                             ]);
                         },
@@ -124,31 +129,61 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
     };
 
     const removePaternPicture = (index: number) => {
-        const newPictures: basicImage[] = [...patternImages.filter((_, i) => i !== index)];
-        const fileToRemove: basicImage = patternImages[index];
-        const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
-        storageRef
-            .delete()
-            .then(() => {
-                setPatternImages(newPictures);
-            })
-            .catch((err) => {
-                setError(err.message);
-            });
+        if (index < patternImages.length) {
+            const newPictures: basicImage[] = [...patternImages.filter((_, i) => i !== index)];
+            const fileToRemove: basicImage = patternImages[index];
+            const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
+            storageRef
+                .delete()
+                .then(() => {
+                    setPatternImages(newPictures);
+                })
+                .catch((err) => {
+                    setError(err.message);
+                });
+        } else {
+            const newPictures: basicImage[] = [...newPatternImages.filter((_, i) => i !== index)];
+            const fileToRemove: basicImage = newPatternImages[index];
+            const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
+            storageRef
+                .delete()
+                .then(() => {
+                    setNewPatternImages(newPictures);
+                })
+                .catch((err) => {
+                    setError(err.message);
+                });
+        }
     };
 
     const removeWorkPicture = (index: number) => {
-        const newPictures: basicImage[] = [...finishedWorkImages.filter((_, i) => i !== index)];
-        const fileToRemove: basicImage = finishedWorkImages[index];
-        const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
-        storageRef
-            .delete()
-            .then(() => {
-                setFinishedWorkImages(newPictures);
-            })
-            .catch((err) => {
-                setError(err.message);
-            });
+        if (index < finishedWorkImages.length) {
+            const newPictures: basicImage[] = [...finishedWorkImages.filter((_, i) => i !== index)];
+            const fileToRemove: basicImage = finishedWorkImages[index];
+            const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
+            storageRef
+                .delete()
+                .then(() => {
+                    setFinishedWorkImages(newPictures);
+                })
+                .catch((err) => {
+                    setError(err.message);
+                });
+        } else {
+            const newPictures: basicImage[] = [
+                ...newFinishedWorkImages.filter((_, i) => i !== index),
+            ];
+            const fileToRemove: basicImage = newFinishedWorkImages[index];
+            const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
+            storageRef
+                .delete()
+                .then(() => {
+                    setNewFinishedWorkImages(newPictures);
+                })
+                .catch((err) => {
+                    setError(err.message);
+                });
+        }
     };
 
     const handleSubmit = () => {
@@ -156,8 +191,8 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
             title,
             description,
             difficulty,
-            patternImages,
-            finishedWorkImages,
+            patternImages: [...patternImages, ...newPatternImages],
+            finishedWorkImages: [...finishedWorkImages, ...newFinishedWorkImages],
             tags: tags.map((t) => t.id),
         };
 
@@ -193,7 +228,7 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
     const handleCancel = () => {
         let newError = 'Errors:';
         newError = '';
-        patternImages.forEach((picture) => {
+        newPatternImages.forEach((picture) => {
             storage
                 .ref(`patternImages/${id}/${picture.name}`)
                 .delete()
@@ -201,7 +236,7 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
                     newError.concat(err.message);
                 });
         });
-        finishedWorkImages.forEach((picture) => {
+        newFinishedWorkImages.forEach((picture) => {
             storage
                 .ref(`finishedWorkImages/${id}/${picture.name}`)
                 .delete()
@@ -279,15 +314,12 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
 
             <FormGroup>
                 <Label for="description">Description</Label>
-                <Input
-                    type="textarea"
-                    name="patternDescription"
-                    id="description"
-                    placeholder="Enter description"
-                    value={description}
-                    onChange={(e) =>
-                        setDescription(e.target.value ? e.target.value.toString() : '')
-                    }
+                <CKEditor
+                    editor={ClassicEditor}
+                    data={description}
+                    onChange={(event: any, editor: any) => {
+                        setDescription(editor.getData());
+                    }}
                 />
             </FormGroup>
 
@@ -305,15 +337,21 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
                             </Button>
                         </div>
                     ))}
+                    {newPatternImages.map((picture: basicImage, index) => (
+                        <div key={picture.name}>
+                            <Label>{picture.name}</Label>
+                            <img src={picture.url} alt="pattern" width="100px" height="100px" />
+                            <Button color="danger" onClick={() => removePaternPicture(index)}>
+                                x
+                            </Button>
+                        </div>
+                    ))}
                     <Input
                         type="file"
                         onChange={(e) =>
                             HandlePatternImageChange(e?.target?.files ? e?.target?.files[0] : null)
                         }
                     />
-                    <Button color="info" onClick={() => {}}>
-                        +
-                    </Button>
                 </>
             </FormGroup>
 
@@ -336,15 +374,26 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
                             </Button>
                         </div>
                     ))}
+                    {newFinishedWorkImages.map((picture, index) => (
+                        <div key={picture.name}>
+                            <Label>{picture.name}</Label>
+                            <img
+                                src={picture.url}
+                                alt="finishedWork"
+                                width="100px"
+                                height="100px"
+                            />
+                            <Button color="danger" onClick={() => removeWorkPicture(index)}>
+                                x
+                            </Button>
+                        </div>
+                    ))}
                     <Input
                         type="file"
                         onChange={(e) =>
                             HandleWorkImageChange(e?.target?.files ? e?.target?.files[0] : null)
                         }
                     />
-                    <Button color="info" onClick={() => {}}>
-                        +
-                    </Button>
                 </>
             </FormGroup>
 
@@ -360,6 +409,8 @@ const EditPattern: React.FC<PropsType> = ({ openEdit, closeModal, currentPattern
             </div>
         </div>
     );
-};
+});
+
+EditPattern.displayName = 'EditPattern';
 
 export default EditPattern;

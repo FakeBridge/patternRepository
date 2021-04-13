@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PatternService from '../../logic/services/patternServices';
 
 import { pattern as patternType, basicImage } from '../../logic/types';
@@ -7,10 +7,10 @@ interface PropsType {
     setCurrentPattern: (pattern: patternType) => void;
 }
 
-const List: React.FC<PropsType> = ({ setCurrentPattern }) => {
+const List: React.FC<PropsType> = React.memo(({ setCurrentPattern }) => {
     const [patterns, setPatterns] = useState<patternType[]>([]);
 
-    const onDataChange = (items: any) => {
+    const onDataChange = useCallback((items: any) => {
         let loadedPatterns: patternType[] = [];
         loadedPatterns = [];
 
@@ -30,7 +30,7 @@ const List: React.FC<PropsType> = ({ setCurrentPattern }) => {
         });
 
         setPatterns(loadedPatterns);
-    };
+    }, []);
 
     useEffect(() => {
         const unsubscribe = PatternService.getAll()
@@ -38,7 +38,7 @@ const List: React.FC<PropsType> = ({ setCurrentPattern }) => {
             .onSnapshot(onDataChange);
 
         return () => unsubscribe();
-    }, []);
+    }, [onDataChange]);
 
     return (
         <div>
@@ -57,11 +57,12 @@ const List: React.FC<PropsType> = ({ setCurrentPattern }) => {
                             height="100px"
                         />
                     ))}
-                    <p>{pattern.description?.slice(0, 250)}</p>
                 </div>
             ))}
         </div>
     );
-};
+});
+
+List.displayName = 'List';
 
 export default List;

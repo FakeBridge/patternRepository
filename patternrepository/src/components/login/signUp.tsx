@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Input, Label } from 'reactstrap';
 import { auth, generateUserDocument } from '../../logic/firebase';
 
 const SignUp: React.FC = () => {
-    const [username, setUsername] = React.useState('');
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [passwordRepeat, setPasswordRepeat] = React.useState('');
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordRepeat, setPasswordRepeat] = useState('');
 
-    const [error, setError] = React.useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const createUserWithEmailAndPasswordHandler = async (event: any) => {
         event.preventDefault();

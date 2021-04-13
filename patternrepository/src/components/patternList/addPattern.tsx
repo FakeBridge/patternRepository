@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { Button, FormGroup, Input, Label } from 'reactstrap';
 import Select from 'react-select';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { UserContext } from '../../logic/providers/userProvider';
 
 import { storage } from '../../logic/firebase';
@@ -293,15 +295,12 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
 
             <FormGroup>
                 <Label for="description">Description</Label>
-                <Input
-                    type="textarea"
-                    name="patternDescription"
-                    id="description"
-                    placeholder="Enter description"
-                    value={description}
-                    onChange={(e) =>
-                        setDescription(e.target.value ? e.target.value.toString() : '')
-                    }
+                <CKEditor
+                    editor={ClassicEditor}
+                    data={description}
+                    onChange={(event: any, editor: any) => {
+                        setDescription(editor.getData());
+                    }}
                 />
             </FormGroup>
 

@@ -1,27 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button, Modal, ModalBody } from 'reactstrap';
 import AddPattern from './addPattern';
 import PatternContainer from './patternContainer';
 import List from './list';
 import { pattern as patternType } from '../../logic/types';
 
+const emptyPattern: patternType = {
+    id: '',
+    title: null,
+    description: null,
+    difficulty: 3,
+    owner: null,
+    patternImages: [],
+    finishedWorkImages: [],
+    tags: [],
+};
+
 const PatternList: React.FC = () => {
-    const emptyPattern: patternType = {
-        id: '',
-        title: null,
-        description: null,
-        difficulty: 3,
-        owner: null,
-        patternImages: [],
-        finishedWorkImages: [],
-        tags: [],
-    };
     const [modalAddOpen, setModalAddOpen] = useState<boolean>(false);
     const [currentPattern, setCurrentPattern] = useState<patternType>(emptyPattern);
 
-    const modalAddToggle = () => {
+    const modalAddToggle = useCallback(() => {
         setModalAddOpen(!modalAddOpen);
-    };
+    }, [modalAddOpen]);
+
+    const closeContainerModal = useCallback(() => setCurrentPattern(emptyPattern), []);
 
     return (
         <div style={{ width: '60%', margin: '0px auto' }}>
@@ -39,10 +42,10 @@ const PatternList: React.FC = () => {
                 </ModalBody>
             </Modal>
 
-            <Modal isOpen={currentPattern.id !== ''} toggle={() => setCurrentPattern(emptyPattern)}>
+            <Modal isOpen={currentPattern.id !== ''} toggle={closeContainerModal}>
                 <ModalBody>
                     <PatternContainer
-                        closeModal={() => setCurrentPattern(emptyPattern)}
+                        closeModal={closeContainerModal}
                         currentPattern={currentPattern}
                     />
                 </ModalBody>
