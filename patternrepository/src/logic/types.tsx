@@ -6,6 +6,7 @@ type userInfo = {
     username: string | null;
     avatar: string | null;
     description: string | null;
+    darkTheme?: boolean;
 };
 
 export type basicUser = {

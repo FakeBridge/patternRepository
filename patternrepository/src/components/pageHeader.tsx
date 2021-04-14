@@ -32,7 +32,7 @@ const PageHeader: React.FC = () => {
                         <NavLink href="/">Home</NavLink>
                     </NavItem>
                     <NavItem>
-                        <NavLink href="/patterns">Browse patterns</NavLink>
+                        <NavLink href="/">Browse patterns</NavLink>
                     </NavItem>
                     <NavItem>
                         <NavLink href="/smth">Smth</NavLink>

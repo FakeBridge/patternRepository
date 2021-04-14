@@ -9,18 +9,24 @@ import Error from './generalComponents/errorCard';
 
 import { UserContext } from '../logic/providers/userProvider';
 
+import { Main } from '../design/styledComponents';
+
 const Navigation: React.FC = () => {
     const { user } = useContext(UserContext);
 
-    if (!user) {
-        return <Login />;
-    }
     return (
         <BrowserRouter>
-            <Route path="/" component={PageHeader} />
-            <Route exact path={['/', '/patterns']} component={PatternList} />
-            <Route exact path="/profile" component={Error} />
-            <Route exact path="/profile/:userID" component={Profile} />
+            <Main>
+                {!user && <Route path="/" component={Login} />}
+                {user && (
+                    <>
+                        <Route path="/" component={PageHeader} />
+                        <Route exact path="/" component={PatternList} />
+                        <Route exact path="/profile" component={Error} />
+                        <Route exact path="/profile/:userID" component={Profile} />
+                    </>
+                )}
+            </Main>
         </BrowserRouter>
     );
 };
