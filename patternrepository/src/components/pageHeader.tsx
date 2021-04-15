@@ -1,18 +1,16 @@
 import React, { useContext } from 'react';
-import {
-    Navbar,
-    NavbarBrand,
-    Nav,
-    NavItem,
-    NavLink,
-    UncontrolledDropdown,
-    DropdownToggle,
-    DropdownMenu,
-    DropdownItem,
-} from 'reactstrap';
+import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { auth } from '../logic/firebase';
 
 import { UserContext } from '../logic/providers/userProvider';
+
+import {
+    PageHeader as PH,
+    HeaderName,
+    Navigation,
+    NavItem,
+    NavLink,
+} from '../design/styledComponents';
 
 const PageHeader: React.FC = () => {
     const { user } = useContext(UserContext);
@@ -23,21 +21,17 @@ const PageHeader: React.FC = () => {
     };
 
     return (
-        <div>
-            <Navbar color="light" light expand="md">
-                <NavbarBrand href="/">patternRepository</NavbarBrand>
-
-                <Nav className="" navbar style={{ width: '-webkit-fill-available' }}>
-                    <NavItem>
-                        <NavLink href="/">Home</NavLink>
-                    </NavItem>
-                    <NavItem>
-                        <NavLink href="/">Browse patterns</NavLink>
-                    </NavItem>
-                    <NavItem>
-                        <NavLink href="/smth">Smth</NavLink>
-                    </NavItem>
-                    <UncontrolledDropdown nav inNavbar style={{ marginLeft: 'auto' }}>
+        <PH>
+            <HeaderName href="/">patternRepository</HeaderName>
+            <Navigation>
+                <NavItem>
+                    <NavLink href="/">Home</NavLink>
+                </NavItem>
+                <NavItem>
+                    <NavLink href="/">Browse patterns</NavLink>
+                </NavItem>
+                <NavItem style={{ float: 'right' }}>
+                    <UncontrolledDropdown nav inNavbar>
                         <DropdownToggle nav caret>
                             {`Welcome ${user?.username}`}
                         </DropdownToggle>
@@ -47,9 +41,9 @@ const PageHeader: React.FC = () => {
                             <DropdownItem onClick={logOutHandler}>Log out</DropdownItem>
                         </DropdownMenu>
                     </UncontrolledDropdown>
-                </Nav>
-            </Navbar>
-        </div>
+                </NavItem>
+            </Navigation>
+        </PH>
     );
 };
 

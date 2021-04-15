@@ -20,6 +20,7 @@ const Login: React.FC = () => {
         <LoginCard>
             <Tabs>
                 <Tab
+                    active={activeTab === 1}
                     className={classnames({ active: activeTab === 1 })}
                     onClick={() => {
                         toggle(1);
@@ -28,6 +29,7 @@ const Login: React.FC = () => {
                     Sign in
                 </Tab>
                 <Tab
+                    active={activeTab === 2}
                     className={classnames({ active: activeTab === 2 })}
                     onClick={() => {
                         toggle(2);

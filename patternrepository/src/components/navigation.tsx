@@ -9,14 +9,14 @@ import Error from './generalComponents/errorCard';
 
 import { UserContext } from '../logic/providers/userProvider';
 
-import { Main } from '../design/styledComponents';
+import { Body } from '../design/styledComponents';
 
 const Navigation: React.FC = () => {
     const { user } = useContext(UserContext);
 
     return (
         <BrowserRouter>
-            <Main>
+            <Body>
                 {!user && <Route path="/" component={Login} />}
                 {user && (
                     <>
@@ -26,7 +26,7 @@ const Navigation: React.FC = () => {
                         <Route exact path="/profile/:userID" component={Profile} />
                     </>
                 )}
-            </Main>
+            </Body>
         </BrowserRouter>
     );
 };

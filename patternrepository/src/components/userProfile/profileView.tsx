@@ -1,9 +1,20 @@
 import React, { useContext } from 'react';
-import { Button, UncontrolledCarousel } from 'reactstrap';
+import { UncontrolledCarousel } from 'reactstrap';
 
 import { UserContext } from '../../logic/providers/userProvider';
 
 import noAvatar from '../../design/images/no-image-icon.png';
+
+import {
+    Main,
+    HelperText,
+    LinkButton,
+    MarginItemDetail,
+    ProfileHeader,
+    SuccessButton,
+    ItemLabel,
+    ItemHeader,
+} from '../../design/styledComponents';
 
 interface PropsType {
     openEdit: (open: boolean) => void;
@@ -25,45 +36,43 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
     const image: string | null = user?.avatar ? user.avatar : noAvatar;
 
     return (
-        <div style={{ maxWidth: '60%', margin: '0px auto' }}>
-            This is how other users see you profile. Click{' '}
-            <Button
-                onClick={() => openEdit(true)}
-                color="link"
-                style={{ padding: '0', lineHeight: '1em' }}
-            >
-                here
-            </Button>{' '}
-            to edit your profile.
-            <div style={{ width: '100%', marginBottom: '20px' }}>
+        <Main>
+            {/* props.match.location === user?.uid && (
+
+        ) */}
+
+            <HelperText>
+                {`This is how other users see you profile. Click `}
+                <LinkButton block={false} onClick={() => openEdit(true)}>
+                    here
+                </LinkButton>{' '}
+                to edit.
+            </HelperText>
+
+            <MarginItemDetail>
                 <UncontrolledCarousel items={items} />
-            </div>
-            <div>
-                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                    <img src={image} alt="avatar" width="100px" height="100px" />
-                    <h1
-                        style={{ alignSelf: 'center', marginLeft: 'auto', marginRight: 'auto' }}
-                    >{`${user?.username}`}</h1>
-                    <Button
-                        onClick={() => {}}
-                        color="info"
-                        style={{ height: '2em', padding: '0px 10px' }}
-                    >
+                <ProfileHeader>
+                    <img src={image} alt="avatar" />
+                    <ItemHeader>{`${user?.username}`}</ItemHeader>
+                    <SuccessButton block={false} onClick={() => {}}>
                         Follow
-                    </Button>
-                </div>
-                <p>Patterns: 0</p>
-                <p>Repositories: 0</p>
-                <p>Followers: 0</p>
-                <p>Follows: 0</p>
-            </div>
-            <h2>Recent patterns</h2>
-            <div>You have no patterns</div>
-            <h2>Repositories</h2>
-            <div>You have no repositories</div>
-            <h2>Followed users</h2>
-            <div>You follow no users</div>
-        </div>
+                    </SuccessButton>
+                </ProfileHeader>
+            </MarginItemDetail>
+
+            <MarginItemDetail>
+                <ItemLabel style={{ marginTop: '0em' }}>Recent patterns</ItemLabel>
+                <div>You have no patterns</div>
+            </MarginItemDetail>
+            <MarginItemDetail>
+                <ItemLabel style={{ marginTop: '0em' }}>Repositories</ItemLabel>
+                <div>You have no repositories</div>
+            </MarginItemDetail>
+            <MarginItemDetail>
+                <ItemLabel style={{ marginTop: '0em' }}>Followed users</ItemLabel>
+                <div>You follow no users</div>
+            </MarginItemDetail>
+        </Main>
     );
 };
 

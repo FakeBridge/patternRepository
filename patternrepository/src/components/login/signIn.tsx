@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Input, Label } from 'reactstrap';
 import { auth } from '../../logic/firebase';
+
+import { SuccessButton, Input, Label, FormGroup, DangerAlert } from '../../design/styledComponents';
 
 const SignIn: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -20,25 +21,31 @@ const SignIn: React.FC = () => {
     );
 
     return (
-        <div>
-            <Label>E-mail</Label>
-            <Input
-                placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-            <Label>password</Label>
-            <Input
-                placeholder="Enter password"
-                value={password}
-                type="password"
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <p>{error}</p>
-            <Button block onClick={signInWithEmailAndPasswordHandler}>
+        <>
+            <FormGroup>
+                <Label>E-mail</Label>
+                <Input
+                    block
+                    placeholder="Enter email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+            </FormGroup>
+            <FormGroup>
+                <Label>Password</Label>
+                <Input
+                    block
+                    placeholder="Enter password"
+                    value={password}
+                    type="password"
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+            </FormGroup>
+            {error && <DangerAlert>{error}</DangerAlert>}
+            <SuccessButton block onClick={signInWithEmailAndPasswordHandler}>
                 Sign in
-            </Button>
-        </div>
+            </SuccessButton>
+        </>
     );
 };
 export default SignIn;

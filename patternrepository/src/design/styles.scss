@@ -1,7 +1,18 @@
-.login {
-    .nav-tabs {
-    }
+.tab-content {
+    padding: 2em;
+}
 
-    .tab-content {
+.dropdown-toggle {
+    color: #4f5d76 !important;
+}
+
+.dropdown-menu {
+    background-color: #4f5d76 !important;
+    a,
+    button {
+        background-color: #4f5d76 !important;
+        color: #f2efea !important;
+        outline: none !important;
+        border: none !important;
     }
 }

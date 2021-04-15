@@ -1,9 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Modal, ModalBody } from 'reactstrap';
+import { Modal } from 'reactstrap';
 import AddPattern from './addPattern';
 import PatternContainer from './patternContainer';
 import List from './list';
 import { pattern as patternType } from '../../logic/types';
+
+import { Main, SearchCard, SuccessButton } from '../../design/styledComponents';
 
 const emptyPattern: patternType = {
     id: '',
@@ -27,30 +29,26 @@ const PatternList: React.FC = () => {
     const closeContainerModal = useCallback(() => setCurrentPattern(emptyPattern), []);
 
     return (
-        <div style={{ width: '60%', margin: '0px auto' }}>
-            <div>
-                <Button color="info" onClick={modalAddToggle}>
+        <Main>
+            <SearchCard>
+                <SuccessButton block={false} onClick={modalAddToggle}>
                     + Pattern
-                </Button>
-            </div>
+                </SuccessButton>
+            </SearchCard>
 
             <List setCurrentPattern={setCurrentPattern} />
 
             <Modal isOpen={modalAddOpen} toggle={modalAddToggle}>
-                <ModalBody>
-                    <AddPattern closeModal={modalAddToggle} />
-                </ModalBody>
+                <AddPattern closeModal={modalAddToggle} />
             </Modal>
 
             <Modal isOpen={currentPattern.id !== ''} toggle={closeContainerModal}>
-                <ModalBody>
-                    <PatternContainer
-                        closeModal={closeContainerModal}
-                        currentPattern={currentPattern}
-                    />
-                </ModalBody>
+                <PatternContainer
+                    closeModal={closeContainerModal}
+                    currentPattern={currentPattern}
+                />
             </Modal>
-        </div>
+        </Main>
     );
 };
 

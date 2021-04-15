@@ -1,7 +1,19 @@
 import React, { useContext } from 'react';
-import { Button } from 'reactstrap';
 import { UserContext } from '../../logic/providers/userProvider';
 import { pattern as patternType } from '../../logic/types';
+
+import {
+    ItemDetail,
+    ItemHeader,
+    ItemLabel,
+    Difficulty,
+    Tag,
+    Description,
+    ButtonRow,
+    CancelButton,
+    LinkButton,
+    HelperText,
+} from '../../design/styledComponents';
 
 interface PropsType {
     openEdit: (open: boolean) => void;
@@ -17,37 +29,48 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
     };
 
     return (
-        <div style={{}}>
+        <ItemDetail>
             {currentPattern?.owner === user?.uid && (
-                <p>
-                    This is how other users see this patterns. Click{' '}
-                    <Button
-                        onClick={() => openEdit(true)}
-                        color="link"
-                        style={{ padding: '0', lineHeight: '1em' }}
-                    >
+                <HelperText>
+                    {`This pattern is yours and this is how other users see it's detail. Click `}
+                    <LinkButton block={false} onClick={() => openEdit(true)}>
                         here
-                    </Button>{' '}
+                    </LinkButton>{' '}
                     to edit.
-                </p>
+                </HelperText>
             )}
 
-            <h1>{currentPattern ? currentPattern.title : 'Untitled'}</h1>
+            <ItemHeader>{currentPattern ? currentPattern.title : 'Untitled'}</ItemHeader>
 
-            <h3>Tags</h3>
+            <>
+                {currentPattern?.tags?.map((tag) => (
+                    <Tag key={tag.id} colour="tag">
+                        {' '}
+                        {tag}{' '}
+                    </Tag>
+                ))}
+            </>
 
-            <h3>{currentPattern?.difficulty}</h3>
+            <Difficulty difficulty={currentPattern?.difficulty ? currentPattern?.difficulty : 3} />
 
-            <h3>Books</h3>
+            <ItemLabel>Books</ItemLabel>
+            <>
+                {/* currentPattern?.books?.map((book) => (
+                    <Tag key={book.id} colour={book.colour}>
+                        {' '}
+                        {tag}{' '}
+                    </Tag>
+                )) */}
+            </>
 
-            <h3>Description</h3>
-            <div
+            <ItemLabel>Description</ItemLabel>
+            <Description
                 dangerouslySetInnerHTML={{
                     __html: currentPattern?.description ? currentPattern.description : '',
                 }}
             />
 
-            <h2 style={{ display: 'block' }}>Pattern pictures</h2>
+            <ItemLabel>Pattern pictures</ItemLabel>
             <>
                 {currentPattern?.patternImages.map((picture) => (
                     <img
@@ -60,7 +83,7 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                 ))}
             </>
 
-            <h2 style={{ display: 'block' }}>Finished works</h2>
+            <ItemLabel>Finished works</ItemLabel>
             <>
                 {currentPattern?.finishedWorkImages.map((picture) => (
                     <img
@@ -73,12 +96,12 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                 ))}
             </>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <Button color="info" onClick={handleClose}>
-                    Cancel
-                </Button>
-            </div>
-        </div>
+            <ButtonRow>
+                <CancelButton block onClick={handleClose}>
+                    Close
+                </CancelButton>
+            </ButtonRow>
+        </ItemDetail>
     );
 });
 

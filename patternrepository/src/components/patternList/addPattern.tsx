@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useContext, useEffect } from 'react';
-import { Button, FormGroup, Input, Label } from 'reactstrap';
 import Select from 'react-select';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
@@ -10,6 +9,21 @@ import PatternService from '../../logic/services/patternServices';
 import TagService from '../../logic/services/tagServices';
 
 import { patternToAdd, fileWithUrl, tag, tagToAdd } from '../../logic/types';
+
+import {
+    FormGroup,
+    Input,
+    Label,
+    ItemDetail,
+    ItemHeader,
+    ButtonRow,
+    SuccessButton,
+    CancelButton,
+    DifficultyInput,
+    FormImageContainer,
+    IconButton,
+    DangerAlert,
+} from '../../design/styledComponents';
 
 interface PropsType {
     closeModal: () => void;
@@ -233,14 +247,14 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
     };
 
     return (
-        <div style={{}}>
-            <h1>Add a new pattern</h1>
+        <ItemDetail>
+            <ItemHeader>Add a new pattern</ItemHeader>
 
             <FormGroup>
-                <Label for="title">Title</Label>
+                <Label>Title</Label>
                 <Input
+                    block
                     name="patternTitle"
-                    id="title"
                     placeholder="Enter title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value ? e.target.value.toString() : '')}
@@ -248,7 +262,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             </FormGroup>
 
             <FormGroup>
-                <Label for="tags">Tags</Label>
+                <Label>Tags</Label>
                 <Select
                     options={allTags}
                     value={tags}
@@ -271,30 +285,26 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             </FormGroup>
 
             <FormGroup>
-                <Label for="difficulty">Difficulty</Label>
-                <Input
+                <Label>Difficulty</Label>
+                <DifficultyInput
+                    block
                     type="range"
-                    id="difficulty"
                     name="patternDifficulty"
                     min={1}
                     max={5}
                     step={1}
                     value={difficulty}
+                    difficulty={difficulty}
                     onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
                 />
             </FormGroup>
 
             <FormGroup>
-                <Label for="books">Add to...</Label>
-                <Input type="select" multiple name="patternBooks" id="books">
-                    <option>Book 1</option>
-                    <option>Book 2 </option>
-                    <option>Book 3</option>
-                </Input>
+                <Label>Add to...</Label>
             </FormGroup>
 
             <FormGroup>
-                <Label for="description">Description</Label>
+                <Label>Description</Label>
                 <CKEditor
                     editor={ClassicEditor}
                     data={description}
@@ -305,66 +315,58 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             </FormGroup>
 
             <FormGroup>
-                <Label for="description" style={{ display: 'block' }}>
-                    Pattern pictures
-                </Label>
+                <Label>Pattern pictures</Label>
                 <>
                     {patternPictures.map((picture, index) => (
-                        <div key={picture.file.name}>
-                            <Label>{picture.file.name}</Label>
-                            <Button color="danger" onClick={() => removePaternPicture(index)}>
-                                x
-                            </Button>
-                        </div>
+                        <FormImageContainer key={picture.file.name}>
+                            <IconButton onClick={() => removePaternPicture(index)}>
+                                <i className="fas fa-trash" />
+                            </IconButton>
+                            <img src={picture.url} alt="pattern" />
+                        </FormImageContainer>
                     ))}
                     <Input
+                        block
                         type="file"
                         onChange={(e) =>
                             HandlePatternImageChange(e?.target?.files ? e?.target?.files[0] : null)
                         }
                     />
-                    <Button color="info" onClick={() => {}}>
-                        +
-                    </Button>
                 </>
             </FormGroup>
 
             <FormGroup>
-                <Label for="description" style={{ display: 'block' }}>
-                    Finished works
-                </Label>
+                <Label>Finished works</Label>
                 <>
                     {finishedWorkPictures.map((picture, index) => (
-                        <div key={picture.file.name}>
-                            <Label>{picture.file.name}</Label>
-                            <Button color="danger" onClick={() => removeWorkPicture(index)}>
-                                x
-                            </Button>
-                        </div>
+                        <FormImageContainer key={picture.file.name}>
+                            <IconButton onClick={() => removeWorkPicture(index)}>
+                                <i className="fas fa-trash" />
+                            </IconButton>
+                            <img src={picture.url} alt="finishedWork" />
+                        </FormImageContainer>
                     ))}
                     <Input
+                        block
                         type="file"
                         onChange={(e) =>
                             HandleWorkImageChange(e?.target?.files ? e?.target?.files[0] : null)
                         }
                     />
-                    <Button color="info" onClick={() => {}}>
-                        +
-                    </Button>
                 </>
             </FormGroup>
 
-            {error && <p>{error}</p>}
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <Button color="info" onClick={handleCancel}>
+            {error && <DangerAlert>{error}</DangerAlert>}
+            <ButtonRow>
+                <CancelButton block={false} onClick={handleCancel}>
                     Cancel
-                </Button>
+                </CancelButton>
 
-                <Button color="info" style={{ marginLeft: 'auto' }} onClick={handleSubmit}>
+                <SuccessButton block={false} onClick={handleSubmit}>
                     Save
-                </Button>
-            </div>
-        </div>
+                </SuccessButton>
+            </ButtonRow>
+        </ItemDetail>
     );
 };
 

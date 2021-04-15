@@ -1,11 +1,23 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Alert, Button, Input, Label } from 'reactstrap';
 
 import { UserContext } from '../../logic/providers/userProvider';
 
 import useStorage from '../../logic/hooks/useStorage';
 
 import { firestore } from '../../logic/firebase';
+
+import {
+    Main,
+    FormGroup,
+    Input,
+    Label,
+    MarginItemDetail,
+    ButtonRow,
+    SuccessButton,
+    CancelButton,
+    DangerAlert,
+    SuccessAlert,
+} from '../../design/styledComponents';
 
 interface PropsType {
     openEdit: (open: boolean) => void;
@@ -66,33 +78,24 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
     };
 
     return (
-        <div style={{ maxWidth: '60%', margin: '0px auto' }}>
-            <div>
-                <Button
-                    onClick={() => openEdit(false)}
-                    color="info"
-                    style={{ padding: '0', lineHeight: '1em' }}
-                >
-                    Cancel
-                </Button>
+        <Main>
+            <MarginItemDetail>
+                <ButtonRow>
+                    <CancelButton onClick={() => openEdit(false)} block={false}>
+                        Cancel
+                    </CancelButton>
 
-                <Button
-                    onClick={() => updateData()}
-                    color="info"
-                    style={{ padding: '0', lineHeight: '1em', marginLeft: '10px' }}
-                >
-                    Save
-                </Button>
-            </div>
-            <Alert isOpen={saved} toggle={() => setSaved(!saved)} color="info">
-                Your changes were saved!
-            </Alert>
+                    <SuccessButton onClick={() => updateData()} block={false}>
+                        Save
+                    </SuccessButton>
+                </ButtonRow>
 
-            {error && <p>{error}</p>}
+                {saved && <SuccessAlert>Your changes were saved!</SuccessAlert>}
 
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <div>
-                    <Label style={{ display: 'block' }}>Profile picture</Label>
+                {error && <DangerAlert>{error}</DangerAlert>}
+
+                <FormGroup>
+                    <Label>Profile picture</Label>
                     {url && (
                         <img
                             style={{ width: '100px', height: '100px', objectFit: 'cover' }}
@@ -101,36 +104,39 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
                         />
                     )}
                     <Input
+                        block
                         type="file"
                         onChange={(e) =>
                             handleImageChange(e?.target?.files ? e?.target?.files[0] : null)
                         }
                     />
                     {file && (
-                        <Button
-                            size="sm"
+                        <SuccessButton
+                            block={false}
                             onClick={() => uploadImage('avatars', user?.uid ? user.uid : '')}
                         >
                             Save image{' '}
-                        </Button>
+                        </SuccessButton>
                     )}
                     {file && progress > 0 && progress < 100 && <p>{`${progress}% uploaded`}</p>}
-                </div>
+                </FormGroup>
 
-                <div>
+                <FormGroup>
                     <Label>Username</Label>
-                    <Input value={username} onChange={(e) => setUsername(e.target.value)} />
-                </div>
-            </div>
-            <div>
-                <Label>{`Something about you <3`}</Label>
-                <Input
-                    type="textarea"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                />
-            </div>
-        </div>
+                    <Input block value={username} onChange={(e) => setUsername(e.target.value)} />
+                </FormGroup>
+
+                <FormGroup>
+                    <Label>{`Something about you <3`}</Label>
+                    <Input
+                        block
+                        type="textarea"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                </FormGroup>
+            </MarginItemDetail>
+        </Main>
     );
 };
 

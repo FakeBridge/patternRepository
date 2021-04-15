@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { Button, Input, Label } from 'reactstrap';
 import { auth, generateUserDocument } from '../../logic/firebase';
+
+import {
+    SuccessButton,
+    Input,
+    Label,
+    FormGroup,
+    DangerAlert,
+    HelperText,
+} from '../../design/styledComponents';
 
 const SignUp: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -27,40 +35,54 @@ const SignUp: React.FC = () => {
     };
 
     return (
-        <div>
-            <Label>Username</Label>
-            <Input
-                placeholder="Enter username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-            />
-            <Label>E-mail</Label>
-            <Input
-                placeholder="Enter mail"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-            <Label>Password</Label>
-            <Input
-                placeholder="Enter password"
-                value={password}
-                type="password"
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <Label>Repeat password</Label>
-            <Input
-                placeholder="Repeat password"
-                value={passwordRepeat}
-                type="password"
-                onChange={(e) => setPasswordRepeat(e.target.value)}
-            />
+        <>
+            <FormGroup>
+                <Label>Username</Label>
+                <Input
+                    block
+                    placeholder="Enter username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+                <HelperText>You can change your username later ^^</HelperText>
+            </FormGroup>
+            <FormGroup>
+                <Label>E-mail</Label>
+                <Input
+                    block
+                    placeholder="Enter mail"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+            </FormGroup>
+            <FormGroup>
+                <Label>Password</Label>
+                <Input
+                    block
+                    placeholder="Enter password"
+                    value={password}
+                    type="password"
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <HelperText>Password has to have at least six characters</HelperText>
+            </FormGroup>
+            <FormGroup>
+                <Label>Repeat password</Label>
+                <Input
+                    block
+                    placeholder="Repeat password"
+                    value={passwordRepeat}
+                    type="password"
+                    onChange={(e) => setPasswordRepeat(e.target.value)}
+                />
+            </FormGroup>
 
-            <p>{error}</p>
-            <Button block onClick={createUserWithEmailAndPasswordHandler}>
+            {error && <DangerAlert>{error}</DangerAlert>}
+            <SuccessButton block onClick={createUserWithEmailAndPasswordHandler}>
                 Sign up
-            </Button>
-        </div>
+            </SuccessButton>
+        </>
     );
 };
 

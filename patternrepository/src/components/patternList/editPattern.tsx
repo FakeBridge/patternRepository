@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Button, FormGroup, Input, Label } from 'reactstrap';
 import Select from 'react-select';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
@@ -9,6 +8,21 @@ import PatternService from '../../logic/services/patternServices';
 import TagService from '../../logic/services/tagServices';
 
 import { pattern, patternToAdd, basicImage, tag as tagType, tagToAdd } from '../../logic/types';
+
+import {
+    FormGroup,
+    Input,
+    Label,
+    ItemDetail,
+    ItemHeader,
+    ButtonRow,
+    SuccessButton,
+    CancelButton,
+    DifficultyInput,
+    FormImageContainer,
+    IconButton,
+    DangerAlert,
+} from '../../design/styledComponents';
 
 interface PropsType {
     openEdit: (open: boolean) => void;
@@ -252,14 +266,14 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
     };
 
     return (
-        <div style={{}}>
-            <h1>Edit this pattern</h1>
+        <ItemDetail>
+            <ItemHeader>Edit this pattern</ItemHeader>
 
             <FormGroup>
-                <Label for="title">Title</Label>
+                <Label>Title</Label>
                 <Input
+                    block
                     name="patternTitle"
-                    id="title"
                     placeholder="Enter title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value ? e.target.value.toString() : '')}
@@ -267,7 +281,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             </FormGroup>
 
             <FormGroup>
-                <Label for="tags">Tags</Label>
+                <Label>Tags</Label>
                 <Select
                     options={allTags}
                     value={tags}
@@ -290,30 +304,26 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             </FormGroup>
 
             <FormGroup>
-                <Label for="difficulty">Difficulty</Label>
-                <Input
+                <Label>Difficulty</Label>
+                <DifficultyInput
+                    block
                     type="range"
-                    id="difficulty"
                     name="patternDifficulty"
                     min={1}
                     max={5}
                     step={1}
                     value={difficulty}
+                    difficulty={difficulty}
                     onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
                 />
             </FormGroup>
 
             <FormGroup>
-                <Label for="books">Add to...</Label>
-                <Input type="select" multiple name="patternBooks" id="books">
-                    <option>Book 1</option>
-                    <option>Book 2 </option>
-                    <option>Book 3</option>
-                </Input>
+                <Label>Add to...</Label>
             </FormGroup>
 
             <FormGroup>
-                <Label for="description">Description</Label>
+                <Label>Description</Label>
                 <CKEditor
                     editor={ClassicEditor}
                     data={description}
@@ -324,29 +334,26 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             </FormGroup>
 
             <FormGroup>
-                <Label for="description" style={{ display: 'block' }}>
-                    Pattern pictures
-                </Label>
+                <Label>Pattern pictures</Label>
                 <>
                     {patternImages.map((picture: basicImage, index) => (
-                        <div key={picture.name}>
-                            <Label>{picture.name}</Label>
-                            <img src={picture.url} alt="pattern" width="100px" height="100px" />
-                            <Button color="danger" onClick={() => removePaternPicture(index)}>
-                                x
-                            </Button>
-                        </div>
+                        <FormImageContainer key={picture.name}>
+                            <IconButton onClick={() => removePaternPicture(index)}>
+                                <i className="fas fa-trash" />
+                            </IconButton>
+                            <img src={picture.url} alt="pattern" />
+                        </FormImageContainer>
                     ))}
                     {newPatternImages.map((picture: basicImage, index) => (
-                        <div key={picture.name}>
-                            <Label>{picture.name}</Label>
-                            <img src={picture.url} alt="pattern" width="100px" height="100px" />
-                            <Button color="danger" onClick={() => removePaternPicture(index)}>
-                                x
-                            </Button>
-                        </div>
+                        <FormImageContainer key={picture.name}>
+                            <IconButton onClick={() => removePaternPicture(index)}>
+                                <i className="fas fa-trash" />
+                            </IconButton>
+                            <img src={picture.url} alt="pattern" />
+                        </FormImageContainer>
                     ))}
                     <Input
+                        block
                         type="file"
                         onChange={(e) =>
                             HandlePatternImageChange(e?.target?.files ? e?.target?.files[0] : null)
@@ -356,39 +363,26 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             </FormGroup>
 
             <FormGroup>
-                <Label for="description" style={{ display: 'block' }}>
-                    Finished works
-                </Label>
+                <Label>Finished works</Label>
                 <>
                     {finishedWorkImages.map((picture, index) => (
-                        <div key={picture.name}>
-                            <Label>{picture.name}</Label>
-                            <img
-                                src={picture.url}
-                                alt="finishedWork"
-                                width="100px"
-                                height="100px"
-                            />
-                            <Button color="danger" onClick={() => removeWorkPicture(index)}>
-                                x
-                            </Button>
-                        </div>
+                        <FormImageContainer key={picture.name}>
+                            <IconButton onClick={() => removeWorkPicture(index)}>
+                                <i className="fas fa-trash" />
+                            </IconButton>
+                            <img src={picture.url} alt="finishedWork" />
+                        </FormImageContainer>
                     ))}
                     {newFinishedWorkImages.map((picture, index) => (
-                        <div key={picture.name}>
-                            <Label>{picture.name}</Label>
-                            <img
-                                src={picture.url}
-                                alt="finishedWork"
-                                width="100px"
-                                height="100px"
-                            />
-                            <Button color="danger" onClick={() => removeWorkPicture(index)}>
-                                x
-                            </Button>
-                        </div>
+                        <FormImageContainer key={picture.name}>
+                            <IconButton onClick={() => removeWorkPicture(index)}>
+                                <i className="fas fa-trash" />
+                            </IconButton>
+                            <img src={picture.url} alt="finishedWork" />
+                        </FormImageContainer>
                     ))}
                     <Input
+                        block
                         type="file"
                         onChange={(e) =>
                             HandleWorkImageChange(e?.target?.files ? e?.target?.files[0] : null)
@@ -397,17 +391,17 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                 </>
             </FormGroup>
 
-            {error && <p>{error}</p>}
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <Button color="info" onClick={handleCancel}>
+            {error && <DangerAlert>{error}</DangerAlert>}
+            <ButtonRow>
+                <CancelButton block={false} onClick={handleCancel}>
                     Cancel
-                </Button>
+                </CancelButton>
 
-                <Button color="info" style={{ marginLeft: 'auto' }} onClick={handleSubmit}>
+                <SuccessButton block={false} onClick={handleSubmit}>
                     Save
-                </Button>
-            </div>
-        </div>
+                </SuccessButton>
+            </ButtonRow>
+        </ItemDetail>
     );
 });
 
