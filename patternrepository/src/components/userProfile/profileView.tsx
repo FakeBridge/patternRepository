@@ -14,6 +14,7 @@ import {
     SuccessButton,
     ItemLabel,
     ItemHeader,
+    Description,
 } from '../../design/styledComponents';
 
 interface PropsType {
@@ -58,6 +59,11 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
                         Follow
                     </SuccessButton>
                 </ProfileHeader>
+                <Description
+                    dangerouslySetInnerHTML={{
+                        __html: user?.description ? user?.description : 'No description here ^^;',
+                    }}
+                />
             </MarginItemDetail>
 
             <MarginItemDetail>

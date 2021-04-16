@@ -20,14 +20,14 @@ const getUserDocument = async (uid: any) => {
     if (!uid) return null;
     try {
         const userDocument = await firestore.doc(`users/${uid}`).get();
-        const userAvatar = await storage.ref(`/avatars/${uid}`).getDownloadURL();
+        // const userAvatar = await storage.ref(`/avatars/${uid}`)?.getDownloadURL();
         return {
             uid,
             ...userDocument.data(),
-            avatar: userAvatar,
+            avatar: null, // userAvatar,
         };
     } catch (error) {
-        console.error('Error fetching user', error);
+        console.error(error.code);
         return null;
     }
 };

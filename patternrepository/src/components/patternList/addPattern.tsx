@@ -1,14 +1,18 @@
-import React, { useState, useMemo, useContext, useEffect } from 'react';
+import React, { useState, useMemo, useContext, useCallback } from 'react';
 import Select from 'react-select';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { UserContext } from '../../logic/providers/userProvider';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+import { UserContext } from '../../logic/providers/userProvider';
+import { TagContext } from '../../logic/providers/tagProvider';
+import { BookContext } from '../../logic/providers/bookProvider';
 import { storage } from '../../logic/firebase';
 import PatternService from '../../logic/services/patternServices';
-import TagService from '../../logic/services/tagServices';
 
-import { patternToAdd, fileWithUrl, tag, tagToAdd } from '../../logic/types';
+import { patternToAdd, fileWithUrl, tag, book } from '../../logic/types';
+
+import multiSelectWithColour from '../../design/selectStyles';
 
 import {
     FormGroup,
@@ -29,12 +33,16 @@ interface PropsType {
     closeModal: () => void;
 }
 
-const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
+const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+
+const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
     const { user } = useContext(UserContext);
+    const { allTags } = useContext(TagContext);
+    const { allBooks } = useContext(BookContext);
 
     const [title, setTitle] = useState<string>('');
     const [tags, setTags] = useState<tag[]>([]);
-    const [allTags, setAllTags] = useState<tag[]>([]);
+    const [books, setBooks] = useState<book[]>([]);
     const [newTag, setNewTag] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [difficulty, setDifficulty] = useState<number>(3);
@@ -45,8 +53,6 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
     const [finishedWorkPictures, setFinishedWorkPictures] = useState<fileWithUrl[]>([]);
 
     const [error, setError] = useState<string | null>(null);
-
-    const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
 
     const id = useMemo(
         () =>
@@ -60,119 +66,116 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
         [newOpen],
     );
 
-    const onTagDataChange = (items: any) => {
-        let loadedTags: tag[] = [];
-        loadedTags = [];
+    const allPossibleBooks = useMemo(
+        () => allBooks.filter((possibleBook) => possibleBook.owner === user?.uid),
+        [allBooks, user?.uid],
+    );
 
-        items.docs.forEach((item: any) => {
-            const { id: tagId } = item;
-            const data = item.data();
+    const HandlePatternImageChange = useCallback(
+        (selectedFile: File | null) => {
+            if (selectedFile) {
+                if (imageTypes.includes(selectedFile.type)) {
+                    const maxAllowSize = 5 * 1024 * 1024;
+                    if (selectedFile.size > maxAllowSize) {
+                        setError('Image is too big! Maximum size is 5MB.');
+                    } else {
+                        const storageRef = storage.ref(`patternImages/${id}/${selectedFile.name}`);
 
-            loadedTags.push({
-                id: tagId,
-                label: data.label,
-                value: tagId,
-            });
-        });
-
-        setAllTags(loadedTags);
-    };
-
-    useEffect(() => {
-        const unsubscribe = TagService.getAll().orderBy('label', 'asc').onSnapshot(onTagDataChange);
-
-        return () => unsubscribe();
-    }, []);
-
-    const HandlePatternImageChange = (selectedFile: File | null) => {
-        if (selectedFile) {
-            if (imageTypes.includes(selectedFile.type)) {
-                const maxAllowSize = 5 * 1024 * 1024;
-                if (selectedFile.size > maxAllowSize) {
-                    setError('Image is too big! Maximum size is 5MB.');
+                        storageRef.put(selectedFile).on(
+                            'state_changed',
+                            () => {},
+                            (err) => {
+                                setError(err.message);
+                            },
+                            async () => {
+                                const downloadUrl = await storageRef.getDownloadURL();
+                                setPatternPictures([
+                                    ...patternPictures,
+                                    { file: selectedFile, url: downloadUrl },
+                                ]);
+                            },
+                        );
+                    }
                 } else {
-                    const storageRef = storage.ref(`patternImages/${id}/${selectedFile.name}`);
-
-                    storageRef.put(selectedFile).on(
-                        'state_changed',
-                        () => {},
-                        (err) => {
-                            setError(err.message);
-                        },
-                        async () => {
-                            const downloadUrl = await storageRef.getDownloadURL();
-                            setPatternPictures([
-                                ...patternPictures,
-                                { file: selectedFile, url: downloadUrl },
-                            ]);
-                        },
-                    );
+                    setError('Please use only select an image file (png or jpg)');
                 }
-            } else {
-                setError('Please use only select an image file (png or jpg)');
             }
-        }
-    };
+        },
+        [id, patternPictures],
+    );
 
-    const HandleWorkImageChange = (selectedFile: File | null) => {
-        if (selectedFile) {
-            if (imageTypes.includes(selectedFile.type)) {
-                const maxAllowSize = 5 * 1024 * 1024;
-                if (selectedFile.size > maxAllowSize) {
-                    setError('Image is too big! Maximum size is 5MB.');
+    const HandleWorkImageChange = useCallback(
+        (selectedFile: File | null) => {
+            if (selectedFile) {
+                if (imageTypes.includes(selectedFile.type)) {
+                    const maxAllowSize = 5 * 1024 * 1024;
+                    if (selectedFile.size > maxAllowSize) {
+                        setError('Image is too big! Maximum size is 5MB.');
+                    } else {
+                        const storageRef = storage.ref(
+                            `finishedWorkImages/${id}/${selectedFile.name}`,
+                        );
+
+                        storageRef.put(selectedFile).on(
+                            'state_changed',
+                            () => {},
+                            (err) => {
+                                setError(err.message);
+                            },
+                            async () => {
+                                const downloadUrl = await storageRef.getDownloadURL();
+                                setFinishedWorkPictures([
+                                    ...finishedWorkPictures,
+                                    { file: selectedFile, url: downloadUrl },
+                                ]);
+                            },
+                        );
+                    }
                 } else {
-                    const storageRef = storage.ref(`finishedWorkImages/${id}/${selectedFile.name}`);
-
-                    storageRef.put(selectedFile).on(
-                        'state_changed',
-                        () => {},
-                        (err) => {
-                            setError(err.message);
-                        },
-                        async () => {
-                            const downloadUrl = await storageRef.getDownloadURL();
-                            setFinishedWorkPictures([
-                                ...finishedWorkPictures,
-                                { file: selectedFile, url: downloadUrl },
-                            ]);
-                        },
-                    );
+                    setError('Please use only select an image file (png or jpg)');
                 }
-            } else {
-                setError('Please use only select an image file (png or jpg)');
             }
-        }
-    };
+        },
+        [id, finishedWorkPictures],
+    );
 
-    const removePaternPicture = (index: number) => {
-        const newPictures: fileWithUrl[] = [...patternPictures.filter((_, i) => i !== index)];
-        const fileToRemove: fileWithUrl = patternPictures[index];
-        const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.file.name}`);
-        storageRef
-            .delete()
-            .then(() => {
-                setPatternPictures(newPictures);
-            })
-            .catch((err) => {
-                setError(err.message);
-            });
-    };
+    const removePaternPicture = useCallback(
+        (index: number) => {
+            const newPictures: fileWithUrl[] = [...patternPictures.filter((_, i) => i !== index)];
+            const fileToRemove: fileWithUrl = patternPictures[index];
+            const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.file.name}`);
+            storageRef
+                .delete()
+                .then(() => {
+                    setPatternPictures(newPictures);
+                })
+                .catch((err) => {
+                    setError(err.message);
+                });
+        },
+        [id, patternPictures],
+    );
 
-    const removeWorkPicture = (index: number) => {
-        const newPictures: fileWithUrl[] = [...finishedWorkPictures.filter((_, i) => i !== index)];
-        const fileToRemove: fileWithUrl = finishedWorkPictures[index];
-        const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.file.name}`);
-        storageRef
-            .delete()
-            .then(() => {
-                setFinishedWorkPictures(newPictures);
-            })
-            .catch((err) => {
-                setError(err.message);
-            });
-    };
+    const removeWorkPicture = useCallback(
+        (index: number) => {
+            const newPictures: fileWithUrl[] = [
+                ...finishedWorkPictures.filter((_, i) => i !== index),
+            ];
+            const fileToRemove: fileWithUrl = finishedWorkPictures[index];
+            const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.file.name}`);
+            storageRef
+                .delete()
+                .then(() => {
+                    setFinishedWorkPictures(newPictures);
+                })
+                .catch((err) => {
+                    setError(err.message);
+                });
+        },
+        [id, finishedWorkPictures],
+    );
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         const data: patternToAdd = {
             title,
             description,
@@ -187,6 +190,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             })),
             owner: user?.uid ? user.uid : null,
             tags: tags.map((t) => t.id),
+            books: books.map((b) => b.id),
         };
 
         PatternService.set(id, data)
@@ -197,10 +201,21 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             .catch((e) => {
                 setError(e?.message);
             });
-    };
+    }, [
+        closeModal,
+        description,
+        difficulty,
+        finishedWorkPictures,
+        id,
+        patternPictures,
+        tags,
+        title,
+        books,
+        user?.uid,
+    ]);
 
-    const handleTagAddition = () => {
-        if (newTag) {
+    const handleTagAddition = useCallback(() => {
+        /*  if (newTag) {
             const data: tagToAdd = {
                 label: newTag,
             };
@@ -209,17 +224,15 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
 
             TagService.set(`${tagId}`, data)
                 .then(() => {
-                    setAllTags([...allTags, { id: tagId, value: tagId, label: newTag }]);
-                    setTags([...tags, { id: tagId, value: tagId, label: newTag }]);
                     setNewTag('');
                 })
                 .catch((e) => {
                     setError(e?.message);
                 });
-        }
-    };
+        } */
+    }, []);
 
-    const handleCancel = () => {
+    const handleCancel = useCallback(() => {
         let newError = 'Errors:';
         newError = '';
         patternPictures.forEach((picture) => {
@@ -244,7 +257,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             setNewOpen(true);
             closeModal();
         }
-    };
+    }, [closeModal, finishedWorkPictures, id, patternPictures]);
 
     return (
         <ItemDetail>
@@ -300,7 +313,16 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             </FormGroup>
 
             <FormGroup>
-                <Label>Add to...</Label>
+                <Label>Books</Label>
+                <Select
+                    styles={multiSelectWithColour}
+                    options={allPossibleBooks}
+                    value={books}
+                    isMulti
+                    onChange={(e) => {
+                        setBooks([...e]);
+                    }}
+                />
             </FormGroup>
 
             <FormGroup>
@@ -320,7 +342,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                     {patternPictures.map((picture, index) => (
                         <FormImageContainer key={picture.file.name}>
                             <IconButton onClick={() => removePaternPicture(index)}>
-                                <i className="fas fa-trash" />
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
                             </IconButton>
                             <img src={picture.url} alt="pattern" />
                         </FormImageContainer>
@@ -341,7 +363,7 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
                     {finishedWorkPictures.map((picture, index) => (
                         <FormImageContainer key={picture.file.name}>
                             <IconButton onClick={() => removeWorkPicture(index)}>
-                                <i className="fas fa-trash" />
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
                             </IconButton>
                             <img src={picture.url} alt="finishedWork" />
                         </FormImageContainer>
@@ -368,6 +390,8 @@ const AddPattern: React.FC<PropsType> = ({ closeModal }) => {
             </ButtonRow>
         </ItemDetail>
     );
-};
+});
+
+AddPattern.displayName = 'AddPattern';
 
 export default AddPattern;

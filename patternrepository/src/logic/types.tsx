@@ -23,7 +23,8 @@ export type pattern = {
     owner?: string | null | basicUser;
     patternImages: basicImage[];
     finishedWorkImages: basicImage[];
-    tags?: tag[];
+    tags: tag[];
+    books: book[];
 };
 
 export type patternToAdd = {
@@ -33,7 +34,8 @@ export type patternToAdd = {
     owner?: string | null;
     patternImages: basicImage[];
     finishedWorkImages: basicImage[];
-    tags?: string[];
+    tags: string[];
+    books: string[];
 };
 
 export type basicImage = {
@@ -54,4 +56,19 @@ export type tag = {
 
 export type tagToAdd = {
     label: string;
+};
+
+export type book = {
+    id: string;
+    label: string;
+    value: string;
+    colour: string;
+    owner: string | null;
+};
+
+export type bookInfo = {
+    label: string;
+    value?: string;
+    colour: string;
+    owner?: string | null;
 };

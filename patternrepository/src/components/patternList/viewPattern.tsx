@@ -10,6 +10,7 @@ import {
     Tag,
     Description,
     ButtonRow,
+    TagRow,
     CancelButton,
     LinkButton,
     HelperText,
@@ -42,26 +43,26 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
 
             <ItemHeader>{currentPattern ? currentPattern.title : 'Untitled'}</ItemHeader>
 
-            <>
-                {currentPattern?.tags?.map((tag) => (
+            <TagRow>
+                {currentPattern?.tags.map((tag) => (
                     <Tag key={tag.id} colour="tag">
                         {' '}
-                        {tag}{' '}
+                        {tag.label}{' '}
                     </Tag>
                 ))}
-            </>
+            </TagRow>
 
             <Difficulty difficulty={currentPattern?.difficulty ? currentPattern?.difficulty : 3} />
 
             <ItemLabel>Books</ItemLabel>
-            <>
-                {/* currentPattern?.books?.map((book) => (
+            <TagRow>
+                {currentPattern?.books?.map((book) => (
                     <Tag key={book.id} colour={book.colour}>
                         {' '}
-                        {tag}{' '}
+                        {book.label}{' '}
                     </Tag>
-                )) */}
-            </>
+                ))}
+            </TagRow>
 
             <ItemLabel>Description</ItemLabel>
             <Description
@@ -71,7 +72,7 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             />
 
             <ItemLabel>Pattern pictures</ItemLabel>
-            <>
+            <TagRow>
                 {currentPattern?.patternImages.map((picture) => (
                     <img
                         key={picture.name}
@@ -81,7 +82,7 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                         height="100px"
                     />
                 ))}
-            </>
+            </TagRow>
 
             <ItemLabel>Finished works</ItemLabel>
             <>
@@ -95,6 +96,7 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     />
                 ))}
             </>
+            <Difficulty difficulty={currentPattern?.difficulty ? currentPattern?.difficulty : 3} />
 
             <ButtonRow>
                 <CancelButton block onClick={handleClose}>

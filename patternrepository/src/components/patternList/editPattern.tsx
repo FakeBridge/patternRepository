@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useContext, useMemo } from 'react';
 import Select from 'react-select';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { storage } from '../../logic/firebase';
 import PatternService from '../../logic/services/patternServices';
-import TagService from '../../logic/services/tagServices';
+import { TagContext } from '../../logic/providers/tagProvider';
+import { BookContext } from '../../logic/providers/bookProvider';
+// import TagService from '../../logic/services/tagServices';
 
-import { pattern, patternToAdd, basicImage, tag as tagType, tagToAdd } from '../../logic/types';
+import { pattern, patternToAdd, basicImage, tag as tagType, book } from '../../logic/types';
+
+import multiSelectWithColour from '../../design/selectStyles';
 
 import {
     FormGroup,
@@ -29,11 +34,15 @@ interface PropsType {
     closeModal: () => void;
     currentPattern: pattern;
 }
+const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
 
 const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, currentPattern }) => {
+    const { allTags } = useContext(TagContext);
+    const { allBooks } = useContext(BookContext);
+
     const [title, setTitle] = useState<string>(currentPattern.title ? currentPattern.title : '');
-    const [tags, setTags] = useState<tagType[]>([]);
-    const [allTags, setAllTags] = useState<tagType[]>([]);
+    const [tags, setTags] = useState<tagType[]>(currentPattern.tags ? currentPattern.tags : []);
+    const [books, setBooks] = useState<book[]>(currentPattern.books ? currentPattern.books : []);
     const [newTag, setNewTag] = useState<string>('');
     const [description, setDescription] = useState<string>(
         currentPattern.description ? currentPattern.description : '',
@@ -54,153 +63,150 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
 
     const [error, setError] = useState<string | null>(null);
 
-    const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-
     const { id } = currentPattern;
 
-    const onTagDataChange = (items: any) => {
-        let loadedTags: tagType[] = [];
-        loadedTags = [];
+    const allPossibleBooks = useMemo(
+        () => allBooks.filter((possibleBook) => possibleBook.owner === currentPattern.owner),
+        [allBooks, currentPattern.owner],
+    );
 
-        items.docs.forEach((item: any) => {
-            const { id: tagId } = item;
-            const data = item.data();
+    const HandlePatternImageChange = useCallback(
+        (selectedFile: File | null) => {
+            if (selectedFile) {
+                if (imageTypes.includes(selectedFile.type)) {
+                    const maxAllowSize = 5 * 1024 * 1024;
+                    if (selectedFile.size > maxAllowSize) {
+                        setError('Image is too big! Maximum size is 5MB.');
+                    } else {
+                        const storageRef = storage.ref(`patternImages/${id}/${selectedFile.name}`);
 
-            loadedTags.push({
-                id: tagId,
-                label: data.label,
-                value: tagId,
-            });
-        });
-
-        setAllTags(loadedTags);
-    };
-
-    useEffect(() => {
-        const unsubscribe = TagService.getAll().orderBy('label', 'asc').onSnapshot(onTagDataChange);
-
-        return () => unsubscribe();
-    }, []);
-
-    const HandlePatternImageChange = (selectedFile: File | null) => {
-        if (selectedFile) {
-            if (imageTypes.includes(selectedFile.type)) {
-                const maxAllowSize = 5 * 1024 * 1024;
-                if (selectedFile.size > maxAllowSize) {
-                    setError('Image is too big! Maximum size is 5MB.');
+                        storageRef.put(selectedFile).on(
+                            'state_changed',
+                            () => {},
+                            (err) => {
+                                setError(err.message);
+                            },
+                            async () => {
+                                const downloadUrl = await storageRef.getDownloadURL();
+                                setNewPatternImages([
+                                    ...newPatternImages,
+                                    { name: selectedFile.name, url: downloadUrl },
+                                ]);
+                            },
+                        );
+                    }
                 } else {
-                    const storageRef = storage.ref(`patternImages/${id}/${selectedFile.name}`);
-
-                    storageRef.put(selectedFile).on(
-                        'state_changed',
-                        () => {},
-                        (err) => {
-                            setError(err.message);
-                        },
-                        async () => {
-                            const downloadUrl = await storageRef.getDownloadURL();
-                            setNewPatternImages([
-                                ...newPatternImages,
-                                { name: selectedFile.name, url: downloadUrl },
-                            ]);
-                        },
-                    );
+                    setError('Please use only select an image file (png or jpg)');
                 }
-            } else {
-                setError('Please use only select an image file (png or jpg)');
             }
-        }
-    };
+        },
+        [id, newPatternImages],
+    );
 
-    const HandleWorkImageChange = (selectedFile: File | null) => {
-        if (selectedFile) {
-            if (imageTypes.includes(selectedFile.type)) {
-                const maxAllowSize = 5 * 1024 * 1024;
-                if (selectedFile.size > maxAllowSize) {
-                    setError('Image is too big! Maximum size is 5MB.');
+    const HandleWorkImageChange = useCallback(
+        (selectedFile: File | null) => {
+            if (selectedFile) {
+                if (imageTypes.includes(selectedFile.type)) {
+                    const maxAllowSize = 5 * 1024 * 1024;
+                    if (selectedFile.size > maxAllowSize) {
+                        setError('Image is too big! Maximum size is 5MB.');
+                    } else {
+                        const storageRef = storage.ref(
+                            `finishedWorkImages/${id}/${selectedFile.name}`,
+                        );
+
+                        storageRef.put(selectedFile).on(
+                            'state_changed',
+                            () => {},
+                            (err) => {
+                                setError(err.message);
+                            },
+                            async () => {
+                                const downloadUrl = await storageRef.getDownloadURL();
+                                setNewFinishedWorkImages([
+                                    ...newFinishedWorkImages,
+                                    { name: selectedFile.name, url: downloadUrl },
+                                ]);
+                            },
+                        );
+                    }
                 } else {
-                    const storageRef = storage.ref(`finishedWorkImages/${id}/${selectedFile.name}`);
-
-                    storageRef.put(selectedFile).on(
-                        'state_changed',
-                        () => {},
-                        (err) => {
-                            setError(err.message);
-                        },
-                        async () => {
-                            const downloadUrl = await storageRef.getDownloadURL();
-                            setNewFinishedWorkImages([
-                                ...newFinishedWorkImages,
-                                { name: selectedFile.name, url: downloadUrl },
-                            ]);
-                        },
-                    );
+                    setError('Please use only select an image file (png or jpg)');
                 }
-            } else {
-                setError('Please use only select an image file (png or jpg)');
             }
-        }
-    };
+        },
+        [id, newFinishedWorkImages],
+    );
 
-    const removePaternPicture = (index: number) => {
-        if (index < patternImages.length) {
-            const newPictures: basicImage[] = [...patternImages.filter((_, i) => i !== index)];
-            const fileToRemove: basicImage = patternImages[index];
-            const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
-            storageRef
-                .delete()
-                .then(() => {
-                    setPatternImages(newPictures);
-                })
-                .catch((err) => {
-                    setError(err.message);
-                });
-        } else {
-            const newPictures: basicImage[] = [...newPatternImages.filter((_, i) => i !== index)];
-            const fileToRemove: basicImage = newPatternImages[index];
-            const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
-            storageRef
-                .delete()
-                .then(() => {
-                    setNewPatternImages(newPictures);
-                })
-                .catch((err) => {
-                    setError(err.message);
-                });
-        }
-    };
+    const removePaternPicture = useCallback(
+        (index: number) => {
+            if (index < patternImages.length) {
+                const newPictures: basicImage[] = [...patternImages.filter((_, i) => i !== index)];
+                const fileToRemove: basicImage = patternImages[index];
+                const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
+                storageRef
+                    .delete()
+                    .then(() => {
+                        setPatternImages(newPictures);
+                    })
+                    .catch((err) => {
+                        setError(err.message);
+                    });
+            } else {
+                const newPictures: basicImage[] = [
+                    ...newPatternImages.filter((_, i) => i !== index),
+                ];
+                const fileToRemove: basicImage = newPatternImages[index];
+                const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
+                storageRef
+                    .delete()
+                    .then(() => {
+                        setNewPatternImages(newPictures);
+                    })
+                    .catch((err) => {
+                        setError(err.message);
+                    });
+            }
+        },
+        [id, newPatternImages, patternImages],
+    );
 
-    const removeWorkPicture = (index: number) => {
-        if (index < finishedWorkImages.length) {
-            const newPictures: basicImage[] = [...finishedWorkImages.filter((_, i) => i !== index)];
-            const fileToRemove: basicImage = finishedWorkImages[index];
-            const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
-            storageRef
-                .delete()
-                .then(() => {
-                    setFinishedWorkImages(newPictures);
-                })
-                .catch((err) => {
-                    setError(err.message);
-                });
-        } else {
-            const newPictures: basicImage[] = [
-                ...newFinishedWorkImages.filter((_, i) => i !== index),
-            ];
-            const fileToRemove: basicImage = newFinishedWorkImages[index];
-            const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
-            storageRef
-                .delete()
-                .then(() => {
-                    setNewFinishedWorkImages(newPictures);
-                })
-                .catch((err) => {
-                    setError(err.message);
-                });
-        }
-    };
+    const removeWorkPicture = useCallback(
+        (index: number) => {
+            if (index < finishedWorkImages.length) {
+                const newPictures: basicImage[] = [
+                    ...finishedWorkImages.filter((_, i) => i !== index),
+                ];
+                const fileToRemove: basicImage = finishedWorkImages[index];
+                const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
+                storageRef
+                    .delete()
+                    .then(() => {
+                        setFinishedWorkImages(newPictures);
+                    })
+                    .catch((err) => {
+                        setError(err.message);
+                    });
+            } else {
+                const newPictures: basicImage[] = [
+                    ...newFinishedWorkImages.filter((_, i) => i !== index),
+                ];
+                const fileToRemove: basicImage = newFinishedWorkImages[index];
+                const storageRef = storage.ref(`finishedWorkImages/${id}/${fileToRemove.name}`);
+                storageRef
+                    .delete()
+                    .then(() => {
+                        setNewFinishedWorkImages(newPictures);
+                    })
+                    .catch((err) => {
+                        setError(err.message);
+                    });
+            }
+        },
+        [finishedWorkImages, id, newFinishedWorkImages],
+    );
 
-    const handleSubmit = () => {
+    const handleSubmit = useCallback(() => {
         const data: patternToAdd = {
             title,
             description,
@@ -208,6 +214,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             patternImages: [...patternImages, ...newPatternImages],
             finishedWorkImages: [...finishedWorkImages, ...newFinishedWorkImages],
             tags: tags.map((t) => t.id),
+            books: books.map((b) => b.id),
         };
 
         PatternService.update(id, data)
@@ -217,10 +224,22 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             .catch((e) => {
                 setError(e?.message);
             });
-    };
+    }, [
+        closeModal,
+        description,
+        difficulty,
+        finishedWorkImages,
+        id,
+        newFinishedWorkImages,
+        newPatternImages,
+        patternImages,
+        tags,
+        books,
+        title,
+    ]);
 
-    const handleTagAddition = () => {
-        if (newTag) {
+    const handleTagAddition = useCallback(() => {
+        /*      if (newTag) {
             const data: tagToAdd = {
                 label: newTag,
             };
@@ -229,17 +248,15 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
 
             TagService.set(`${tagId}`, data)
                 .then(() => {
-                    setAllTags([...allTags, { id: tagId, value: tagId, label: newTag }]);
-                    setTags([...tags, { id: tagId, value: tagId, label: newTag }]);
                     setNewTag('');
                 })
                 .catch((e) => {
                     setError(e?.message);
                 });
-        }
-    };
+        } */
+    }, []);
 
-    const handleCancel = () => {
+    const handleCancel = useCallback(() => {
         let newError = 'Errors:';
         newError = '';
         newPatternImages.forEach((picture) => {
@@ -263,7 +280,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
         } else {
             openEdit(false);
         }
-    };
+    }, [id, newFinishedWorkImages, newPatternImages, openEdit]);
 
     return (
         <ItemDetail>
@@ -289,6 +306,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     backspaceRemovesValue
                     inputValue={newTag}
                     onKeyDown={(e) => {
+                        //    e.preventDefault();
                         const enterKeyCode = 13;
                         if (e.keyCode === enterKeyCode) {
                             handleTagAddition();
@@ -319,7 +337,16 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             </FormGroup>
 
             <FormGroup>
-                <Label>Add to...</Label>
+                <Label>Books</Label>
+                <Select
+                    styles={multiSelectWithColour}
+                    options={allPossibleBooks}
+                    value={books}
+                    isMulti
+                    onChange={(e) => {
+                        setBooks([...e]);
+                    }}
+                />
             </FormGroup>
 
             <FormGroup>
@@ -339,7 +366,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     {patternImages.map((picture: basicImage, index) => (
                         <FormImageContainer key={picture.name}>
                             <IconButton onClick={() => removePaternPicture(index)}>
-                                <i className="fas fa-trash" />
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
                             </IconButton>
                             <img src={picture.url} alt="pattern" />
                         </FormImageContainer>
@@ -347,7 +374,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     {newPatternImages.map((picture: basicImage, index) => (
                         <FormImageContainer key={picture.name}>
                             <IconButton onClick={() => removePaternPicture(index)}>
-                                <i className="fas fa-trash" />
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
                             </IconButton>
                             <img src={picture.url} alt="pattern" />
                         </FormImageContainer>
@@ -368,7 +395,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     {finishedWorkImages.map((picture, index) => (
                         <FormImageContainer key={picture.name}>
                             <IconButton onClick={() => removeWorkPicture(index)}>
-                                <i className="fas fa-trash" />
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
                             </IconButton>
                             <img src={picture.url} alt="finishedWork" />
                         </FormImageContainer>
@@ -376,7 +403,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     {newFinishedWorkImages.map((picture, index) => (
                         <FormImageContainer key={picture.name}>
                             <IconButton onClick={() => removeWorkPicture(index)}>
-                                <i className="fas fa-trash" />
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
                             </IconButton>
                             <img src={picture.url} alt="finishedWork" />
                         </FormImageContainer>

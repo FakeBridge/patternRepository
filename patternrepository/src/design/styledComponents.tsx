@@ -151,13 +151,17 @@ export const IconButton = styled.button`
     padding: 0px;
     background-color: ${dangerColour}44;
     color: ${dangerColour};
-    border-radius: 5px;
+    border-radius: 1em;
     border: 2px solid ${dangerColour};
-    font-size: 2em;
+    font-size: 1.5em;
     text-decoration: none;
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 5px;
+    right: 5px;
+
+    svg {
+        vertical-align: inherit;
+    }
 `;
 
 export const Input = styled.input<{ block: boolean }>`
@@ -271,7 +275,7 @@ export const Navigation = styled.nav`
     padding: 0em;
 `;
 
-export const NavItem = styled.li`
+export const NavItem = styled.span`
     display: inline-block;
     list-style: none;
     width: auto;
@@ -354,7 +358,7 @@ export const ItemLabel = styled.h2`
 export const ButtonRow = styled.section`
     width: 100%;
     display: block;
-    margin: 1em 0px 0px 0px;
+    margin: 0px;
 
     display: flex;
     justify-content: space-between;
@@ -365,11 +369,21 @@ export const Difficulty = styled.hr<{ difficulty: number }>`
     border-radius: 5px;
 `;
 
+export const TagRow = styled.section`
+    width: 100%;
+    display: block;
+    margin: 1em 0px;
+`;
+
 export const Tag = styled.li<{ colour: string }>`
     height: 1em;
-    background-color: ${(props) => (props.colour === 'tag' ? secondaryColor : successColour)};
-    color: ${accentColor};
-    font-size: 1em;
+    display: inline;
+    background-color: ${(props) => (props.colour === 'tag' ? accentColourDark : props.colour)};
+    color: ${accentColourLight};
+    font-size: 0.8em;
+    border-radius: 5px;
+    padding: 2px 5px;
+    margin-right: 0.5em;
 `;
 
 export const Description = styled.section`

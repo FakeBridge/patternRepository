@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { auth, generateUserDocument } from '../../logic/firebase';
 
+import { isEmail } from '../../logic/helperFunctions';
+
 import {
     SuccessButton,
     Input,
@@ -53,7 +55,14 @@ const SignUp: React.FC = () => {
                     placeholder="Enter mail"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                        if (!isEmail(e.target.value)) {
+                            setError('This is not a valid email!');
+                        } else {
+                            setError(null);
+                        }
+                        setEmail(e.target.value);
+                    }}
                 />
             </FormGroup>
             <FormGroup>

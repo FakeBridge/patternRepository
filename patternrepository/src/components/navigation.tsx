@@ -11,7 +11,7 @@ import { UserContext } from '../logic/providers/userProvider';
 
 import { Body } from '../design/styledComponents';
 
-const Navigation: React.FC = () => {
+const Navigation: React.FC = React.memo(() => {
     const { user } = useContext(UserContext);
 
     return (
@@ -29,6 +29,8 @@ const Navigation: React.FC = () => {
             </Body>
         </BrowserRouter>
     );
-};
+});
+
+Navigation.displayName = 'Navigation';
 
 export default Navigation;

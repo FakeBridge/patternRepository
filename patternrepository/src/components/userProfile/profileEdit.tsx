@@ -1,4 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 import { UserContext } from '../../logic/providers/userProvider';
 
@@ -36,10 +38,15 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
 
     useEffect(() => {
         let name = '';
+        let descriptionText = '';
         if (user && user.username) {
             name = user.username;
         }
+        if (user && user.description) {
+            descriptionText = user.description;
+        }
         setUsername(name);
+        setDescription(descriptionText);
     }, [user]);
 
     const { progress, url, uploadImage } = useStorage(file);
@@ -82,7 +89,7 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
             <MarginItemDetail>
                 <ButtonRow>
                     <CancelButton onClick={() => openEdit(false)} block={false}>
-                        Cancel
+                        Close
                     </CancelButton>
 
                     <SuccessButton onClick={() => updateData()} block={false}>
@@ -128,11 +135,12 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
 
                 <FormGroup>
                     <Label>{`Something about you <3`}</Label>
-                    <Input
-                        block
-                        type="textarea"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                    <CKEditor
+                        editor={ClassicEditor}
+                        data={description}
+                        onChange={(event: any, editor: any) => {
+                            setDescription(editor.getData());
+                        }}
                     />
                 </FormGroup>
             </MarginItemDetail>

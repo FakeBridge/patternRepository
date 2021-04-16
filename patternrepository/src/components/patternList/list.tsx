@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import PatternService from '../../logic/services/patternServices';
+import { TagContext } from '../../logic/providers/tagProvider';
+import { BookContext } from '../../logic/providers/bookProvider';
 
 import { pattern as patternType, basicImage } from '../../logic/types';
 
@@ -12,6 +14,7 @@ import {
     SuccessButton,
     DangerButton,
     Difficulty,
+    TagRow,
     Tag,
 } from '../../design/styledComponents';
 
@@ -20,34 +23,46 @@ interface PropsType {
 }
 
 const List: React.FC<PropsType> = React.memo(({ setCurrentPattern }) => {
+    const { allTags } = useContext(TagContext);
+    const { allBooks } = useContext(BookContext);
+
     const [patterns, setPatterns] = useState<patternType[]>([]);
 
-    const onDataChange = useCallback((items: any) => {
-        let loadedPatterns: patternType[] = [];
-        loadedPatterns = [];
+    const onDataChange = useCallback(
+        (items: any) => {
+            let loadedPatterns: patternType[] = [];
+            loadedPatterns = [];
 
-        items.docs.forEach((item: any) => {
-            const { id } = item;
-            const data = item.data();
+            items.docs.forEach((item: any) => {
+                const { id } = item;
+                const data = item.data();
 
-            loadedPatterns.push({
-                id,
-                title: data.title,
-                description: data.description,
-                difficulty: data.difficulty,
-                owner: data.owner,
-                patternImages: data.patternImages,
-                finishedWorkImages: data.finishedWorkImages,
+                loadedPatterns.push({
+                    id,
+                    title: data.title,
+                    description: data.description,
+                    difficulty: data.difficulty,
+                    owner: data.owner,
+                    patternImages: data.patternImages,
+                    finishedWorkImages: data.finishedWorkImages,
+                    tags: allTags.length
+                        ? data.tags.map((tagId: string) => allTags.find((tag) => tag.id === tagId))
+                        : [],
+                    books: allBooks.length
+                        ? data.books.map((bookId: string) =>
+                              allBooks.find((book) => book.id === bookId),
+                          )
+                        : [],
+                });
             });
-        });
 
-        setPatterns(loadedPatterns);
-    }, []);
+            setPatterns(loadedPatterns);
+        },
+        [allTags, allBooks],
+    );
 
     useEffect(() => {
-        const unsubscribe = PatternService.getAll()
-            .orderBy('title', 'asc')
-            .onSnapshot(onDataChange);
+        const unsubscribe = PatternService.getAll().limit(20).onSnapshot(onDataChange);
 
         return () => unsubscribe();
     }, [onDataChange]);
@@ -57,7 +72,6 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern }) => {
             {patterns.map((pattern: patternType) => (
                 <Item key={pattern.id}>
                     <ItemDetail>
-                        <ItemHeader>{pattern.title}</ItemHeader>
                         <ButtonRow>
                             <DangerButton block={false} onClick={() => setCurrentPattern(pattern)}>
                                 Detail
@@ -66,16 +80,25 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern }) => {
                                 Copy
                             </SuccessButton>
                         </ButtonRow>
-                        <Difficulty difficulty={pattern.difficulty} />
-                        <>
+                        <ItemHeader>{pattern.title}</ItemHeader>
+                        <TagRow>
                             {pattern.tags?.map((tag) => (
                                 <Tag key={tag.id} colour="tag">
                                     {' '}
-                                    {tag}{' '}
+                                    {tag.label}{' '}
                                 </Tag>
                             ))}
-                        </>
-                        {pattern.finishedWorkImages.slice(0, 3).map((image: basicImage) => (
+                        </TagRow>
+                        <Difficulty difficulty={pattern.difficulty} />
+                        <TagRow>
+                            {pattern.books?.map((book) => (
+                                <Tag key={book.id} colour={book.colour}>
+                                    {' '}
+                                    {book.label}{' '}
+                                </Tag>
+                            ))}
+                        </TagRow>
+                        {pattern.finishedWorkImages.slice(0, 4).map((image: basicImage) => (
                             <img
                                 key={image.name}
                                 src={image.url}
