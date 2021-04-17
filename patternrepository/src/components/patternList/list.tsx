@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PatternService from '../../logic/services/patternServices';
 import { TagContext } from '../../logic/providers/tagProvider';
 import { BookContext } from '../../logic/providers/bookProvider';
@@ -11,8 +12,7 @@ import {
     ItemDetail,
     ItemHeader,
     ButtonRow,
-    SuccessButton,
-    DangerButton,
+    InvisibleIconButton,
     Difficulty,
     TagRow,
     Tag,
@@ -73,12 +73,12 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern }) => {
                 <Item key={pattern.id}>
                     <ItemDetail>
                         <ButtonRow>
-                            <DangerButton block={false} onClick={() => setCurrentPattern(pattern)}>
-                                Detail
-                            </DangerButton>
-                            <SuccessButton block={false} onClick={() => {}}>
-                                Copy
-                            </SuccessButton>
+                            <InvisibleIconButton onClick={() => setCurrentPattern(pattern)}>
+                                <FontAwesomeIcon icon={['fas', 'info-circle']} />
+                            </InvisibleIconButton>
+                            <InvisibleIconButton onClick={() => {}}>
+                                <FontAwesomeIcon icon={['fas', 'copy']} />
+                            </InvisibleIconButton>
                         </ButtonRow>
                         <ItemHeader>{pattern.title}</ItemHeader>
                         <TagRow>

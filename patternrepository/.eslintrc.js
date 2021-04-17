@@ -26,7 +26,7 @@ module.exports = {
   rules: {
     // Include .prettierrc.js rules
     'prettier/prettier': [ 'error', {
-      "endOfLine": "auto"
+      "endOfLine": "auto",
     }, {
       usePrettierrc: true
     } ],

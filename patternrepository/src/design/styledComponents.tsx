@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import patternbkg from './images/pattern-bkg.jpg';
 import patternbkgDark from './images/pattern-bkg-dark.jpg';
 
-const darkTheme = true;
+const darkTheme = false;
 
 const mainColourLight = '#FFF';
 const mainColourDark = '#1a232f'; // '#2D3142';
@@ -164,6 +164,22 @@ export const IconButton = styled.button`
     }
 `;
 
+export const InvisibleIconButton = styled.button`
+    height: 1.5em;
+    width: 1.5em;
+    padding: 0px;
+    background-color: transparent !important;
+    color: ${accentColourDark};
+    outline: none !important;
+    border: none;
+    font-size: 1.5em;
+    text-decoration: none;
+
+    svg {
+        vertical-align: inherit;
+    }
+`;
+
 export const Input = styled.input<{ block: boolean }>`
     width: ${(props) => (props.block ? '100%' : '50px')};
     height: 2em;
@@ -298,14 +314,12 @@ export const ItemList = styled.ul`
 `;
 
 export const Item = styled.li`
-    max-width: 33%;
-    min-width: 20%;
+    width: 33%;
     display: inline-block;
     vertical-align: top;
     margin: 0px;
     padding: 0em 2em 2em 0em;
-    &:last-child,
-    &:nth-child(3) {
+    &:nth-child(3n) {
         padding-right: 0em;
     }
 `;

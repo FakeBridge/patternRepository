@@ -3,14 +3,21 @@ import ReactDOM from 'react-dom';
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fab } from '@fortawesome/free-brands-svg-icons';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import {
+    faTrash,
+    faPrint,
+    faFileDownload,
+    faSpinner,
+    faCopy,
+    faInfoCircle,
+} from '@fortawesome/free-solid-svg-icons';
 
 import App from './components/App';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import './design/styles.scss';
 
-library.add(fab, faTrash);
+library.add(fab, faTrash, faPrint, faFileDownload, faSpinner, faCopy, faInfoCircle);
 
 ReactDOM.render(
     <React.StrictMode>

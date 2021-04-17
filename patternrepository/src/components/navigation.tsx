@@ -15,19 +15,19 @@ const Navigation: React.FC = React.memo(() => {
     const { user } = useContext(UserContext);
 
     return (
-        <BrowserRouter>
-            <Body>
+        <Body>
+            <PageHeader />
+            <BrowserRouter>
                 {!user && <Route path="/" component={Login} />}
                 {user && (
                     <>
-                        <Route path="/" component={PageHeader} />
                         <Route exact path="/" component={PatternList} />
                         <Route exact path="/profile" component={Error} />
                         <Route exact path="/profile/:userID" component={Profile} />
                     </>
                 )}
-            </Body>
-        </BrowserRouter>
+            </BrowserRouter>
+        </Body>
     );
 });
 

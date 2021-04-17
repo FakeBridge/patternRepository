@@ -1,11 +1,17 @@
 import React, { useContext } from 'react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { UserContext } from '../../logic/providers/userProvider';
 import { pattern as patternType } from '../../logic/types';
+
+import PatternPrint from './patternPrint';
+import ToExport from './toExport2';
 
 import {
     ItemDetail,
     ItemHeader,
     ItemLabel,
+    InvisibleIconButton,
     Difficulty,
     Tag,
     Description,
@@ -41,6 +47,26 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                 </HelperText>
             )}
 
+            <ButtonRow>
+                <PatternPrint pattern={currentPattern} />
+                <PDFDownloadLink
+                    document={<ToExport pattern={currentPattern} />}
+                    fileName={currentPattern?.title ? currentPattern.title : 'Untitled'}
+                >
+                    {({ loading }) =>
+                        loading ? (
+                            <InvisibleIconButton>
+                                <FontAwesomeIcon icon={['fas', 'spinner']} />
+                            </InvisibleIconButton>
+                        ) : (
+                            <InvisibleIconButton>
+                                <FontAwesomeIcon icon={['fas', 'file-download']} />
+                            </InvisibleIconButton>
+                        )
+                    }
+                </PDFDownloadLink>
+            </ButtonRow>
+
             <ItemHeader>{currentPattern ? currentPattern.title : 'Untitled'}</ItemHeader>
 
             <TagRow>
@@ -72,7 +98,7 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             />
 
             <ItemLabel>Pattern pictures</ItemLabel>
-            <TagRow>
+            <>
                 {currentPattern?.patternImages.map((picture) => (
                     <img
                         key={picture.name}
@@ -82,7 +108,7 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                         height="100px"
                     />
                 ))}
-            </TagRow>
+            </>
 
             <ItemLabel>Finished works</ItemLabel>
             <>

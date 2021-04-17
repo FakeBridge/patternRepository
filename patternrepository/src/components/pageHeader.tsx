@@ -22,10 +22,14 @@ const PageHeader: React.FC = () => {
 
     return (
         <PH>
-            <HeaderName href="/">patternRepository</HeaderName>
+            <HeaderName href="/" onClick={(e) => e.preventDefault()}>
+                patternRepository
+            </HeaderName>
             <Navigation>
                 <NavItem>
-                    <NavLink href="/">Home</NavLink>
+                    <NavLink href="/" onClick={(e) => e.preventDefault()}>
+                        Home
+                    </NavLink>
                 </NavItem>
                 <NavItem>
                     <NavLink href="/">Browse patterns</NavLink>
