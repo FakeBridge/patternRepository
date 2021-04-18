@@ -1,16 +1,11 @@
 import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { auth } from '../logic/firebase';
 
 import { UserContext } from '../logic/providers/userProvider';
 
-import {
-    PageHeader as PH,
-    HeaderName,
-    Navigation,
-    NavItem,
-    NavLink,
-} from '../design/styledComponents';
+import { PageHeader as PH, HeaderName, Navigation, NavItem } from '../design/styledComponents';
 
 const PageHeader: React.FC = () => {
     const { user } = useContext(UserContext);
@@ -22,17 +17,15 @@ const PageHeader: React.FC = () => {
 
     return (
         <PH>
-            <HeaderName href="/" onClick={(e) => e.preventDefault()}>
-                patternRepository
+            <HeaderName>
+                <Link to="/home">patternRepository</Link>
             </HeaderName>
             <Navigation>
                 <NavItem>
-                    <NavLink href="/" onClick={(e) => e.preventDefault()}>
-                        Home
-                    </NavLink>
+                    <Link to="/home">Home</Link>
                 </NavItem>
                 <NavItem>
-                    <NavLink href="/">Browse patterns</NavLink>
+                    <Link to="/patterns">Browse patterns</Link>
                 </NavItem>
                 <NavItem style={{ float: 'right' }}>
                     <UncontrolledDropdown nav inNavbar>
@@ -40,7 +33,9 @@ const PageHeader: React.FC = () => {
                             {`Welcome ${user?.username}`}
                         </DropdownToggle>
                         <DropdownMenu right>
-                            <DropdownItem href={`/profile/${user?.uid}`}>Profile</DropdownItem>
+                            <DropdownItem>
+                                <Link to={`/profile/${user?.uid}`}>Profile</Link>
+                            </DropdownItem>
                             <DropdownItem divider />
                             <DropdownItem onClick={logOutHandler}>Log out</DropdownItem>
                         </DropdownMenu>

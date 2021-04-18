@@ -16,12 +16,12 @@ const Navigation: React.FC = React.memo(() => {
 
     return (
         <Body>
-            <PageHeader />
             <BrowserRouter>
+                <PageHeader />
                 {!user && <Route path="/" component={Login} />}
                 {user && (
                     <>
-                        <Route exact path="/" component={PatternList} />
+                        <Route exact path={['/home', '/patterns']} component={PatternList} />
                         <Route exact path="/profile" component={Error} />
                         <Route exact path="/profile/:userID" component={Profile} />
                     </>

@@ -8,9 +8,16 @@ import { storage } from '../../logic/firebase';
 import PatternService from '../../logic/services/patternServices';
 import { TagContext } from '../../logic/providers/tagProvider';
 import { BookContext } from '../../logic/providers/bookProvider';
-// import TagService from '../../logic/services/tagServices';
+import TagService from '../../logic/services/tagServices';
 
-import { pattern, patternToAdd, basicImage, tag as tagType, book } from '../../logic/types';
+import {
+    pattern,
+    patternToAdd,
+    basicImage,
+    tag as tagType,
+    tagToAdd,
+    book,
+} from '../../logic/types';
 
 import multiSelectWithColour from '../../design/selectStyles';
 
@@ -239,7 +246,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
     ]);
 
     const handleTagAddition = useCallback(() => {
-        /*      if (newTag) {
+        if (newTag) {
             const data: tagToAdd = {
                 label: newTag,
             };
@@ -248,13 +255,14 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
 
             TagService.set(`${tagId}`, data)
                 .then(() => {
+                    setTags([...tags, { id: tagId, value: tagId, label: newTag }]);
                     setNewTag('');
                 })
                 .catch((e) => {
                     setError(e?.message);
                 });
-        } */
-    }, []);
+        }
+    }, [newTag, tags]);
 
     const handleCancel = useCallback(() => {
         let newError = 'Errors:';
@@ -306,10 +314,9 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     backspaceRemovesValue
                     inputValue={newTag}
                     onKeyDown={(e) => {
-                        //    e.preventDefault();
-                        const enterKeyCode = 13;
-                        if (e.keyCode === enterKeyCode) {
+                        if (e.key === 'Enter') {
                             handleTagAddition();
+                            e.preventDefault();
                         }
                     }}
                     onInputChange={(e) => {

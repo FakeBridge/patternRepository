@@ -278,11 +278,13 @@ export const PageHeader = styled.div`
     padding: 0.5rem 1rem;
 `;
 
-export const HeaderName = styled.a`
-    color: ${accentColourDark} !important;
-    font-size: 1.5em;
-    font-weight: bold;
-    padding-right: 1em;
+export const HeaderName = styled.span`
+    a {
+        color: ${accentColourDark} !important;
+        font-size: 1.5em;
+        font-weight: bold;
+        padding-right: 1em;
+    }
 `;
 
 export const Navigation = styled.nav`
@@ -301,12 +303,11 @@ export const NavItem = styled.span`
     &:hover {
         cursor: pointer;
     }
-`;
-
-export const NavLink = styled.a`
-    color: ${fontColour} !important;
-    font-size: 1em;
-    vertical-align: sub;
+    a {
+        color: ${fontColour};
+        font-size: 1em;
+        vertical-align: sub;
+    }
 `;
 
 export const ItemList = styled.ul`

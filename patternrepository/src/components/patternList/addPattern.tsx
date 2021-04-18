@@ -7,10 +7,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { UserContext } from '../../logic/providers/userProvider';
 import { TagContext } from '../../logic/providers/tagProvider';
 import { BookContext } from '../../logic/providers/bookProvider';
-import { storage } from '../../logic/firebase';
+import { firestore, storage } from '../../logic/firebase';
 import PatternService from '../../logic/services/patternServices';
+import TagService from '../../logic/services/tagServices';
 
-import { patternToAdd, fileWithUrl, tag, book } from '../../logic/types';
+import { patternToAdd, fileWithUrl, tag, book, tagToAdd } from '../../logic/types';
 
 import multiSelectWithColour from '../../design/selectStyles';
 
@@ -215,7 +216,7 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
     ]);
 
     const handleTagAddition = useCallback(() => {
-        /*  if (newTag) {
+        if (newTag) {
             const data: tagToAdd = {
                 label: newTag,
             };
@@ -224,13 +225,14 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
 
             TagService.set(`${tagId}`, data)
                 .then(() => {
+                    setTags([...tags, { id: tagId, value: tagId, label: newTag }]);
                     setNewTag('');
                 })
                 .catch((e) => {
                     setError(e?.message);
                 });
-        } */
-    }, []);
+        }
+    }, [newTag, tags]);
 
     const handleCancel = useCallback(() => {
         let newError = 'Errors:';
@@ -283,9 +285,9 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
                     backspaceRemovesValue
                     inputValue={newTag}
                     onKeyDown={(e) => {
-                        const enterKeyCode = 13;
-                        if (e.keyCode === enterKeyCode) {
+                        if (e.key === 'Enter') {
                             handleTagAddition();
+                            e.preventDefault();
                         }
                     }}
                     onInputChange={(e) => {
@@ -296,6 +298,15 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
                     }}
                 />
             </FormGroup>
+
+            <SuccessButton
+                block={false}
+                onClick={() => {
+                    firestore.collection('/tags2').add({ label: 'testTag' });
+                }}
+            >
+                addaTag
+            </SuccessButton>
 
             <FormGroup>
                 <Label>Difficulty</Label>
