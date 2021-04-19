@@ -149,16 +149,18 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
         (index: number) => {
             if (index < patternImages.length) {
                 const newPictures: basicImage[] = [...patternImages.filter((_, i) => i !== index)];
-                const fileToRemove: basicImage = patternImages[index];
+                setPatternImages(newPictures);
+
+                // TODO: check if not other patterns are using this picture;
+                /*    const fileToRemove: basicImage = patternImages[index];
                 const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.name}`);
                 storageRef
                     .delete()
                     .then(() => {
-                        setPatternImages(newPictures);
-                    })
+                         })
                     .catch((err) => {
                         setError(err.message);
-                    });
+                    }); */
             } else {
                 const newPictures: basicImage[] = [
                     ...newPatternImages.filter((_, i) => i !== index),

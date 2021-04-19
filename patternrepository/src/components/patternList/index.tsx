@@ -27,9 +27,11 @@ const PatternList: React.FC = React.memo(() => {
     const [modalAddOpen, setModalAddOpen] = useState<boolean>(false);
     const [modalAddBookOpen, setModalAddBookOpen] = useState<boolean>(false);
     const [currentPattern, setCurrentPattern] = useState<patternType>(emptyPattern);
+    const [copyPattern, setCopyPattern] = useState<patternType | null>(null);
 
     const modalAddToggle = useCallback(() => {
         setModalAddOpen(!modalAddOpen);
+        setCopyPattern(null);
     }, [modalAddOpen]);
 
     const modalAddBookToggle = useCallback(() => {
@@ -51,14 +53,20 @@ const PatternList: React.FC = React.memo(() => {
                         </SuccessButton>
                     </SearchCard>
 
-                    <List setCurrentPattern={setCurrentPattern} />
+                    <List
+                        setCurrentPattern={setCurrentPattern}
+                        setCopyPattern={(pattern: patternType) => {
+                            setCopyPattern(pattern);
+                            setModalAddOpen(true);
+                        }}
+                    />
 
                     <Modal isOpen={modalAddBookOpen} toggle={modalAddBookToggle}>
                         <AddBook closeModal={modalAddBookToggle} />
                     </Modal>
 
                     <Modal isOpen={modalAddOpen} toggle={modalAddToggle}>
-                        <AddPattern closeModal={modalAddToggle} />
+                        <AddPattern closeModal={modalAddToggle} copyPattern={copyPattern} />
                     </Modal>
 
                     <Modal isOpen={currentPattern.id !== ''} toggle={closeContainerModal}>

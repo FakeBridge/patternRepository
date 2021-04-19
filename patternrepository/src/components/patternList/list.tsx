@@ -20,9 +20,10 @@ import {
 
 interface PropsType {
     setCurrentPattern: (pattern: patternType) => void;
+    setCopyPattern: (pattern: patternType) => void;
 }
 
-const List: React.FC<PropsType> = React.memo(({ setCurrentPattern }) => {
+const List: React.FC<PropsType> = React.memo(({ setCurrentPattern, setCopyPattern }) => {
     const { allTags } = useContext(TagContext);
     const { allBooks } = useContext(BookContext);
 
@@ -76,7 +77,11 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern }) => {
                             <InvisibleIconButton onClick={() => setCurrentPattern(pattern)}>
                                 <FontAwesomeIcon icon={['fas', 'info-circle']} />
                             </InvisibleIconButton>
-                            <InvisibleIconButton onClick={() => {}}>
+                            <InvisibleIconButton
+                                onClick={() => {
+                                    setCopyPattern(pattern);
+                                }}
+                            >
                                 <FontAwesomeIcon icon={['fas', 'copy']} />
                             </InvisibleIconButton>
                         </ButtonRow>

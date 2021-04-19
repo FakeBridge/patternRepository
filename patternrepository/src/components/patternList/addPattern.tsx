@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext, useCallback } from 'react';
+import React, { useState, useMemo, useContext, useCallback, useEffect } from 'react';
 import Select from 'react-select';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
@@ -7,11 +7,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { UserContext } from '../../logic/providers/userProvider';
 import { TagContext } from '../../logic/providers/tagProvider';
 import { BookContext } from '../../logic/providers/bookProvider';
-import { firestore, storage } from '../../logic/firebase';
+import { storage } from '../../logic/firebase';
 import PatternService from '../../logic/services/patternServices';
 import TagService from '../../logic/services/tagServices';
 
-import { patternToAdd, fileWithUrl, tag, book, tagToAdd } from '../../logic/types';
+import {
+    patternToAdd,
+    fileWithUrl,
+    basicImage,
+    tag,
+    book,
+    tagToAdd,
+    pattern,
+} from '../../logic/types';
 
 import multiSelectWithColour from '../../design/selectStyles';
 
@@ -32,11 +40,12 @@ import {
 
 interface PropsType {
     closeModal: () => void;
+    copyPattern: pattern | null;
 }
 
 const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
 
-const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
+const AddPattern: React.FC<PropsType> = React.memo(({ closeModal, copyPattern }) => {
     const { user } = useContext(UserContext);
     const { allTags } = useContext(TagContext);
     const { allBooks } = useContext(BookContext);
@@ -50,6 +59,7 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
 
     const [newOpen, setNewOpen] = useState<boolean>(false);
 
+    const [copiedPatternPictures, setCopiedPatternPictures] = useState<basicImage[]>([]);
     const [patternPictures, setPatternPictures] = useState<fileWithUrl[]>([]);
     const [finishedWorkPictures, setFinishedWorkPictures] = useState<fileWithUrl[]>([]);
 
@@ -71,6 +81,15 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
         () => allBooks.filter((possibleBook) => possibleBook.owner === user?.uid),
         [allBooks, user?.uid],
     );
+
+    useEffect(() => {
+        if (copyPattern) {
+            setTitle(copyPattern?.title ? copyPattern.title : 'Untitled pattern');
+            setTags(copyPattern.tags);
+            setDescription(copyPattern?.description ? copyPattern.description : '');
+            setCopiedPatternPictures(copyPattern.patternImages);
+        }
+    }, [copyPattern]);
 
     const HandlePatternImageChange = useCallback(
         (selectedFile: File | null) => {
@@ -140,9 +159,21 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
         [id, finishedWorkPictures],
     );
 
+    const removeCopiedPaternPicture = useCallback(
+        (index: number) => {
+            const newPictures: basicImage[] = [
+                ...copiedPatternPictures.filter((_, i) => i !== index),
+            ];
+            setCopiedPatternPictures(newPictures);
+        },
+        [copiedPatternPictures],
+    );
+
     const removePaternPicture = useCallback(
         (index: number) => {
-            const newPictures: fileWithUrl[] = [...patternPictures.filter((_, i) => i !== index)];
+            const newPictures: fileWithUrl[] = [
+                ...patternPictures.filter((picture, i) => i !== index),
+            ];
             const fileToRemove: fileWithUrl = patternPictures[index];
             const storageRef = storage.ref(`patternImages/${id}/${fileToRemove.file.name}`);
             storageRef
@@ -299,15 +330,6 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
                 />
             </FormGroup>
 
-            <SuccessButton
-                block={false}
-                onClick={() => {
-                    firestore.collection('/tags2').add({ label: 'testTag' });
-                }}
-            >
-                addaTag
-            </SuccessButton>
-
             <FormGroup>
                 <Label>Difficulty</Label>
                 <DifficultyInput
@@ -350,6 +372,14 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal }) => {
             <FormGroup>
                 <Label>Pattern pictures</Label>
                 <>
+                    {copiedPatternPictures.map((picture, index) => (
+                        <FormImageContainer key={picture.name}>
+                            <IconButton onClick={() => removeCopiedPaternPicture(index)}>
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
+                            </IconButton>
+                            <img src={picture.url} alt="pattern" />
+                        </FormImageContainer>
+                    ))}
                     {patternPictures.map((picture, index) => (
                         <FormImageContainer key={picture.file.name}>
                             <IconButton onClick={() => removePaternPicture(index)}>

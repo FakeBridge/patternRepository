@@ -31,6 +31,13 @@ export const Body = styled.main`
     height: 100vh;
     background: url(${darkTheme ? patternbkgDark : patternbkg});
     background-size: cover;
+    overflow: hidden;
+`;
+
+export const Content = styled.div`
+    width: 100%;
+    height: 100vh;
+    overflow: auto;
 `;
 
 export const Main = styled.section`
