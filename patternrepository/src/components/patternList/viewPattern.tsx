@@ -37,7 +37,7 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
 
     return (
         <ItemDetail>
-            {currentPattern?.owner === user?.uid && (
+            {currentPattern?.owner?.uid === user?.uid && (
                 <HelperText>
                     {`This pattern is yours and this is how other users see it's detail. Click `}
                     <LinkButton block={false} onClick={() => openEdit(true)}>
@@ -55,11 +55,11 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                 >
                     {({ loading }) =>
                         loading ? (
-                            <InvisibleIconButton>
+                            <InvisibleIconButton red={false}>
                                 <FontAwesomeIcon icon={['fas', 'spinner']} />
                             </InvisibleIconButton>
                         ) : (
-                            <InvisibleIconButton>
+                            <InvisibleIconButton red={false}>
                                 <FontAwesomeIcon icon={['fas', 'file-download']} />
                             </InvisibleIconButton>
                         )

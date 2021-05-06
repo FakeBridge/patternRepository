@@ -223,6 +223,7 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal, copyPattern })
             owner: user?.uid ? user.uid : null,
             tags: tags.map((t) => t.id),
             books: books.map((b) => b.id),
+            likes: 0,
         };
 
         PatternService.set(id, data)

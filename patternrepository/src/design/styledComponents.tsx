@@ -171,12 +171,12 @@ export const IconButton = styled.button`
     }
 `;
 
-export const InvisibleIconButton = styled.button`
-    height: 1.5em;
-    width: 1.5em;
-    padding: 0px;
+export const InvisibleIconButton = styled.button<{ red: boolean }>`
+    height: 1em;
+    width: 1em;
+    padding: 0px !important;
     background-color: transparent !important;
-    color: ${accentColourDark};
+    color: ${(props) => (props.red ? dangerColour : accentColourDark)};
     outline: none !important;
     border: none;
     font-size: 1.5em;
@@ -184,6 +184,8 @@ export const InvisibleIconButton = styled.button`
 
     svg {
         vertical-align: inherit;
+        height: inherit;
+        width: inherit !important;
     }
 `;
 
@@ -367,8 +369,12 @@ export const ProfileHeader = styled.section`
 `;
 
 export const ItemHeader = styled.h1`
+    margin-top: 0.5em;
     color: ${fontColour};
     font-size: 2em;
+
+    display: flex;
+    justify-content: space-between;
 `;
 
 export const ItemLabel = styled.h2`
@@ -389,6 +395,44 @@ export const ButtonRow = styled.section`
 export const Difficulty = styled.hr<{ difficulty: number }>`
     border: 5px solid ${(props) => difficulties[props.difficulty - 1]};
     border-radius: 5px;
+`;
+
+export const BottomInfoRow = styled.section<{ liked: boolean }>`
+    width: 100%;
+    display: block;
+    margin: 1em 0px 0px 0px;
+    color: ${(props) => (props.liked ? dangerColour : fontColour)};
+
+    span {
+        padding-left: 0.2em;
+        font-size: 1em;
+        vertical-align: super;
+    }
+`;
+
+export const UserInfoRow = styled.section`
+    width: 100%;
+    display: block;
+    margin: 1em 0px 0px 0px;
+
+    color: ${fontColour};
+    font-size: 1em;
+
+    span:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    img {
+        margin-right: 0.2em !important;
+        height: 30px;
+        width: 30px;
+        border-radius: 15px;
+    }
+
+    img:hover {
+        cursor: pointer;
+    }
 `;
 
 export const TagRow = styled.section`

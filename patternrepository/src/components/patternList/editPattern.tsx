@@ -34,6 +34,7 @@ import {
     FormImageContainer,
     IconButton,
     DangerAlert,
+    InvisibleIconButton,
 } from '../../design/styledComponents';
 
 interface PropsType {
@@ -73,7 +74,10 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
     const { id } = currentPattern;
 
     const allPossibleBooks = useMemo(
-        () => allBooks.filter((possibleBook) => possibleBook.owner === currentPattern.owner),
+        () =>
+            allBooks.filter(
+                (possibleBook) => possibleBook.owner === currentPattern.owner?.username,
+            ),
         [allBooks, currentPattern.owner],
     );
 
@@ -224,6 +228,7 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             finishedWorkImages: [...finishedWorkImages, ...newFinishedWorkImages],
             tags: tags.map((t) => t.id),
             books: books.map((b) => b.id),
+            likes: 0,
         };
 
         PatternService.update(id, data)
@@ -292,9 +297,21 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
         }
     }, [id, newFinishedWorkImages, newPatternImages, openEdit]);
 
+    const remove = useCallback(() => {
+        if (window.confirm('Are you sure you want to delete this pattern?')) {
+            PatternService.remove(id);
+            closeModal();
+        }
+    }, [id, closeModal]);
+
     return (
         <ItemDetail>
-            <ItemHeader>Edit this pattern</ItemHeader>
+            <ItemHeader>
+                Edit this pattern{' '}
+                <InvisibleIconButton style={{ fontSize: '1em' }} red onClick={remove}>
+                    <FontAwesomeIcon icon={['fas', 'trash']} />
+                </InvisibleIconButton>
+            </ItemHeader>
 
             <FormGroup>
                 <Label>Title</Label>

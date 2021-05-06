@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PatternService from '../../logic/services/patternServices';
+import LikedPatternsService from '../../logic/services/likedPatternsServices';
 import { TagContext } from '../../logic/providers/tagProvider';
 import { BookContext } from '../../logic/providers/bookProvider';
+import { UsersContext } from '../../logic/providers/usersProvider';
+import { UserContext } from '../../logic/providers/userProvider';
 
 import { pattern as patternType, basicImage } from '../../logic/types';
 
@@ -16,6 +19,8 @@ import {
     Difficulty,
     TagRow,
     Tag,
+    BottomInfoRow,
+    UserInfoRow,
 } from '../../design/styledComponents';
 
 interface PropsType {
@@ -24,10 +29,14 @@ interface PropsType {
 }
 
 const List: React.FC<PropsType> = React.memo(({ setCurrentPattern, setCopyPattern }) => {
+    const { user } = useContext(UserContext);
     const { allTags } = useContext(TagContext);
     const { allBooks } = useContext(BookContext);
+    const { allUsers } = useContext(UsersContext);
 
     const [patterns, setPatterns] = useState<patternType[]>([]);
+
+    const [likedPatterns, setLikedPatterns] = useState<string[]>([]);
 
     const onDataChange = useCallback(
         (items: any) => {
@@ -43,7 +52,7 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern, setCopyPatter
                     title: data.title,
                     description: data.description,
                     difficulty: data.difficulty,
-                    owner: data.owner,
+                    owner: allUsers.find((u) => u.uid === data.owner),
                     patternImages: data.patternImages,
                     finishedWorkImages: data.finishedWorkImages,
                     tags: allTags.length
@@ -54,19 +63,45 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern, setCopyPatter
                               allBooks.find((book) => book.id === bookId),
                           )
                         : [],
+                    likes: data.likes ? data.likes : 0,
                 });
             });
 
             setPatterns(loadedPatterns);
         },
-        [allTags, allBooks],
+        [allTags, allBooks, allUsers],
     );
 
-    useEffect(() => {
-        const unsubscribe = PatternService.getAll().limit(20).onSnapshot(onDataChange);
+    const onLikedDataChange = useCallback((items: any) => {
+        setLikedPatterns(items.data()?.patterns ? items.data()?.patterns : []);
+    }, []);
 
-        return () => unsubscribe();
-    }, [onDataChange]);
+    useEffect(() => {
+        const unsubscribePattern = PatternService.getAll().limit(20).onSnapshot(onDataChange);
+        const unsubscribeLiked = LikedPatternsService.getAll()
+            .doc(user?.uid ? user.uid : '')
+            .onSnapshot(onLikedDataChange);
+
+        return () => {
+            unsubscribePattern();
+            unsubscribeLiked();
+        };
+    }, [onDataChange, onLikedDataChange, user]);
+
+    const changeLike = (patternData: patternType, by: number) => {
+        if (user?.uid) {
+            const likes = patternData.likes + by;
+            PatternService.updateLikes(patternData.id, likes);
+
+            let newLiked = likedPatterns;
+            if (by > 0) {
+                newLiked = [...likedPatterns, patternData.id];
+            } else {
+                newLiked = likedPatterns.filter((p) => p !== patternData.id);
+            }
+            LikedPatternsService.setLiked(user.uid, newLiked);
+        }
+    };
 
     return (
         <ItemList>
@@ -74,10 +109,14 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern, setCopyPatter
                 <Item key={pattern.id}>
                     <ItemDetail>
                         <ButtonRow>
-                            <InvisibleIconButton onClick={() => setCurrentPattern(pattern)}>
+                            <InvisibleIconButton
+                                red={false}
+                                onClick={() => setCurrentPattern(pattern)}
+                            >
                                 <FontAwesomeIcon icon={['fas', 'info-circle']} />
                             </InvisibleIconButton>
                             <InvisibleIconButton
+                                red={false}
                                 onClick={() => {
                                     setCopyPattern(pattern);
                                 }}
@@ -112,6 +151,25 @@ const List: React.FC<PropsType> = React.memo(({ setCurrentPattern, setCopyPatter
                                 height="100px"
                             />
                         ))}
+                        <UserInfoRow>
+                            <img
+                                key={pattern.owner?.uid}
+                                src={pattern.owner?.avatar ? pattern.owner.avatar : undefined}
+                                alt={pattern.owner?.avatar ? pattern.owner.avatar : undefined}
+                            />
+                            <span>{pattern.owner?.username}</span>
+                        </UserInfoRow>
+                        <BottomInfoRow liked={likedPatterns.includes(pattern.id)}>
+                            <InvisibleIconButton
+                                red={likedPatterns.includes(pattern.id)}
+                                onClick={() =>
+                                    changeLike(pattern, likedPatterns.includes(pattern.id) ? -1 : 1)
+                                }
+                            >
+                                <FontAwesomeIcon icon={['fas', 'heart']} />
+                            </InvisibleIconButton>
+                            <span>{pattern.likes}</span>
+                        </BottomInfoRow>
                     </ItemDetail>
                 </Item>
             ))}

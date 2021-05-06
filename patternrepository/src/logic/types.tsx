@@ -12,7 +12,7 @@ type userInfo = {
 export type basicUser = {
     uid: string | null;
     username: string | null;
-    avatar: string | null | basicImage | fileWithUrl;
+    avatar: string | null;
 };
 
 export type pattern = {
@@ -20,11 +20,12 @@ export type pattern = {
     title: string | null;
     description: string | null;
     difficulty: number;
-    owner?: string | null | basicUser;
+    owner?: basicUser;
     patternImages: basicImage[];
     finishedWorkImages: basicImage[];
     tags: tag[];
     books: book[];
+    likes: number;
 };
 
 export type patternToAdd = {
@@ -36,6 +37,7 @@ export type patternToAdd = {
     finishedWorkImages: basicImage[];
     tags: string[];
     books: string[];
+    likes: number;
 };
 
 export type basicImage = {

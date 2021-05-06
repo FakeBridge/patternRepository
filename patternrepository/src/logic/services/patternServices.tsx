@@ -30,6 +30,10 @@ const set = (id: string, value: patternToAdd) => {
     return collectionRef.doc(id).set(value);
 };
 
+const updateLikes = (id: string, value: number) => {
+    return collectionRef.doc(id).update({ likes: value });
+};
+
 const remove = (id: string) => {
     return collectionRef.doc(id).delete();
 };
@@ -39,6 +43,7 @@ const PatternService = {
     getAllMine,
     getAllOfUser,
     set,
+    updateLikes,
     create,
     update,
     remove,

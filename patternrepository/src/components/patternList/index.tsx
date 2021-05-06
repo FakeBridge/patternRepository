@@ -7,6 +7,7 @@ import List from './list';
 
 import TagProvider from '../../logic/providers/tagProvider';
 import BookProvider from '../../logic/providers/bookProvider';
+import UsersProvider from '../../logic/providers/usersProvider';
 import { pattern as patternType } from '../../logic/types';
 
 import { Main, SearchCard, SuccessButton } from '../../design/styledComponents';
@@ -16,11 +17,12 @@ const emptyPattern: patternType = {
     title: null,
     description: null,
     difficulty: 3,
-    owner: null,
+    owner: { uid: '0', username: '', avatar: '' },
     patternImages: [],
     finishedWorkImages: [],
     tags: [],
     books: [],
+    likes: 0,
 };
 
 const PatternList: React.FC = React.memo(() => {
@@ -41,43 +43,45 @@ const PatternList: React.FC = React.memo(() => {
     const closeContainerModal = useCallback(() => setCurrentPattern(emptyPattern), []);
 
     return (
-        <TagProvider>
-            <BookProvider>
-                <Main>
-                    <SearchCard>
-                        <SuccessButton block={false} onClick={modalAddToggle}>
-                            + Pattern
-                        </SuccessButton>
-                        <SuccessButton block={false} onClick={modalAddBookToggle}>
-                            + Book
-                        </SuccessButton>
-                    </SearchCard>
+        <UsersProvider>
+            <TagProvider>
+                <BookProvider>
+                    <Main>
+                        <SearchCard>
+                            <SuccessButton block={false} onClick={modalAddToggle}>
+                                + Pattern
+                            </SuccessButton>
+                            <SuccessButton block={false} onClick={modalAddBookToggle}>
+                                + Book
+                            </SuccessButton>
+                        </SearchCard>
 
-                    <List
-                        setCurrentPattern={setCurrentPattern}
-                        setCopyPattern={(pattern: patternType) => {
-                            setCopyPattern(pattern);
-                            setModalAddOpen(true);
-                        }}
-                    />
-
-                    <Modal isOpen={modalAddBookOpen} toggle={modalAddBookToggle}>
-                        <AddBook closeModal={modalAddBookToggle} />
-                    </Modal>
-
-                    <Modal isOpen={modalAddOpen} toggle={modalAddToggle}>
-                        <AddPattern closeModal={modalAddToggle} copyPattern={copyPattern} />
-                    </Modal>
-
-                    <Modal isOpen={currentPattern.id !== ''} toggle={closeContainerModal}>
-                        <PatternContainer
-                            closeModal={closeContainerModal}
-                            currentPattern={currentPattern}
+                        <List
+                            setCurrentPattern={setCurrentPattern}
+                            setCopyPattern={(pattern: patternType) => {
+                                setCopyPattern(pattern);
+                                setModalAddOpen(true);
+                            }}
                         />
-                    </Modal>
-                </Main>
-            </BookProvider>
-        </TagProvider>
+
+                        <Modal isOpen={modalAddBookOpen} toggle={modalAddBookToggle}>
+                            <AddBook closeModal={modalAddBookToggle} />
+                        </Modal>
+
+                        <Modal isOpen={modalAddOpen} toggle={modalAddToggle}>
+                            <AddPattern closeModal={modalAddToggle} copyPattern={copyPattern} />
+                        </Modal>
+
+                        <Modal isOpen={currentPattern.id !== ''} toggle={closeContainerModal}>
+                            <PatternContainer
+                                closeModal={closeContainerModal}
+                                currentPattern={currentPattern}
+                            />
+                        </Modal>
+                    </Main>
+                </BookProvider>
+            </TagProvider>
+        </UsersProvider>
     );
 });
 
