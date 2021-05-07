@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 
 import BookService from '../../../logic/services/bookServices';
 
-import { book, bookInfo } from '../../../logic/types';
+import { book as bookType, bookInfo } from '../../../logic/types';
 
 import {
     FormGroup,
@@ -18,12 +18,13 @@ import {
 
 interface PropsType {
     closeModal: () => void;
-    book: book;
+    currentBook: bookType;
+    openEdit: (open: boolean) => void;
 }
 
-const EditBook: React.FC<PropsType> = React.memo(({ closeModal, book }) => {
-    const [label, setLabel] = useState<string>(book.label);
-    const [colour, setColour] = useState<string>(book.colour);
+const EditBook: React.FC<PropsType> = React.memo(({ currentBook, openEdit, closeModal }) => {
+    const [label, setLabel] = useState<string>(currentBook.label);
+    const [colour, setColour] = useState<string>(currentBook.colour);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -33,18 +34,18 @@ const EditBook: React.FC<PropsType> = React.memo(({ closeModal, book }) => {
             colour,
         };
 
-        BookService.update(book?.id ? book.id : '00', data)
+        BookService.update(currentBook?.id ? currentBook.id : '00', data)
             .then(() => {
                 closeModal();
             })
             .catch((e) => {
                 setError(e?.message);
             });
-    }, [closeModal, colour, label]);
+    }, [closeModal, colour, label, currentBook.id]);
 
     const handleCancel = useCallback(() => {
-        closeModal();
-    }, [closeModal]);
+        openEdit(false);
+    }, [openEdit]);
 
     return (
         <ItemDetail>

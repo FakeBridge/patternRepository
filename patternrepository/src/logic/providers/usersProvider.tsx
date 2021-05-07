@@ -1,18 +1,18 @@
 import React, { createContext, useState, useEffect } from 'react';
 import UserService from '../services/userServices';
-import { basicUser } from '../types';
+import { userInfo } from '../types';
 
-export const UsersContext = createContext<{ allUsers: basicUser[] }>({ allUsers: [] });
+export const UsersContext = createContext<{ allUsers: userInfo[] }>({ allUsers: [] });
 
 interface PropsType {
     children: JSX.Element;
 }
 
 const UsersProvider: React.FC<PropsType> = ({ children }) => {
-    const [allUsers, setAllUsers] = useState<{ allUsers: basicUser[] }>({ allUsers: [] });
+    const [allUsers, setAllUsers] = useState<{ allUsers: userInfo[] }>({ allUsers: [] });
 
     const onUserDataChange = (items: any) => {
-        let loadedUsers: basicUser[] = [];
+        let loadedUsers: userInfo[] = [];
         loadedUsers = [];
 
         items.docs.forEach((item: any) => {
@@ -23,6 +23,9 @@ const UsersProvider: React.FC<PropsType> = ({ children }) => {
                 uid: userId,
                 username: data.username,
                 avatar: data.avatar,
+                email: data.email,
+                description: data.description,
+                darkTheme: data.darkTheme,
             });
         });
 

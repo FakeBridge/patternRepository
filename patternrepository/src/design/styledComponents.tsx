@@ -190,7 +190,7 @@ export const InvisibleIconButton = styled.button<{ red: boolean }>`
 `;
 
 export const Input = styled.input<{ block: boolean }>`
-    width: ${(props) => (props.block ? '100%' : '50px')};
+    width: ${(props) => (props.block ? '100%' : '30%')};
     height: 2em;
     padding-left: 0.4em;
     padding-right: 0.4em;
@@ -334,6 +334,14 @@ export const Item = styled.li`
     }
 `;
 
+export const FullWidthItem = styled.li`
+    width: 100%;
+    display: block;
+    vertical-align: top;
+    margin: 0px;
+    padding: 1em 0em;
+`;
+
 export const ItemDetail = styled(Card)`
     padding: 1em;
     img {
@@ -350,6 +358,22 @@ export const ItemDetail = styled(Card)`
 
 export const MarginItemDetail = styled(ItemDetail)`
     margin: 2em 0em;
+`;
+
+export const BookButton = styled.button<{ colour: string }>`
+    outline: none;
+    border: none;
+    padding: 0.5em 1.5em;
+    border-radius: 5px;
+    display: inline-block;
+    margin-right: 0.5em;
+    color: ${(props) => (darkTheme ? fontColour : props.colour)};
+    background-color: ${(props) => props.colour}${darkTheme ? 'AA' : '88'};
+
+    &:hover {
+        text-decoration: underline;
+        cursor: pointer;
+    }
 `;
 
 export const ProfileHeader = styled.section`
@@ -418,7 +442,11 @@ export const UserInfoRow = styled.section`
     color: ${fontColour};
     font-size: 1em;
 
-    span:hover {
+    a {
+        color: ${fontColour};
+    }
+
+    a:hover {
         text-decoration: underline;
         cursor: pointer;
     }

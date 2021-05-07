@@ -10,7 +10,7 @@ import BookProvider from '../../logic/providers/bookProvider';
 import UsersProvider from '../../logic/providers/usersProvider';
 import { pattern as patternType } from '../../logic/types';
 
-import { Main, SearchCard, SuccessButton } from '../../design/styledComponents';
+import { Main, SearchCard, SuccessButton, Input } from '../../design/styledComponents';
 
 const emptyPattern: patternType = {
     id: '',
@@ -31,6 +31,8 @@ const PatternList: React.FC = React.memo(() => {
     const [currentPattern, setCurrentPattern] = useState<patternType>(emptyPattern);
     const [copyPattern, setCopyPattern] = useState<patternType | null>(null);
 
+    const [searchTitle, setSearchTitle] = useState<string>('');
+
     const modalAddToggle = useCallback(() => {
         setModalAddOpen(!modalAddOpen);
         setCopyPattern(null);
@@ -48,6 +50,15 @@ const PatternList: React.FC = React.memo(() => {
                 <BookProvider>
                     <Main>
                         <SearchCard>
+                            <Input
+                                block={false}
+                                name="patternSearch"
+                                placeholder="Search in titles"
+                                value={searchTitle}
+                                onChange={(e) =>
+                                    setSearchTitle(e.target.value ? e.target.value.toString() : '')
+                                }
+                            />
                             <SuccessButton block={false} onClick={modalAddToggle}>
                                 + Pattern
                             </SuccessButton>
@@ -62,6 +73,7 @@ const PatternList: React.FC = React.memo(() => {
                                 setCopyPattern(pattern);
                                 setModalAddOpen(true);
                             }}
+                            searchTitle={searchTitle}
                         />
 
                         <Modal isOpen={modalAddBookOpen} toggle={modalAddBookToggle}>

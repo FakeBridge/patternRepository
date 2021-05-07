@@ -1,6 +1,6 @@
 export type user = userInfo | null;
 
-type userInfo = {
+export type userInfo = {
     uid: string | null;
     email: string | null;
     username: string | null;
@@ -26,6 +26,7 @@ export type pattern = {
     tags: tag[];
     books: book[];
     likes: number;
+    dateCreated?: number;
 };
 
 export type patternToAdd = {
@@ -66,6 +67,7 @@ export type book = {
     value: string;
     colour: string;
     owner: string | null;
+    patterns?: pattern[];
 };
 
 export type bookInfo = {
