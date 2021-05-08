@@ -1,13 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useCallback, useState } from 'react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { Link } from 'react-router-dom';
+import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { UserContext } from '../../logic/providers/userProvider';
-import { pattern as patternType } from '../../logic/types';
+import { UsersContext } from '../../logic/providers/usersProvider';
+import { pattern as patternType, comment as commentType, commentToAdd } from '../../logic/types';
+import CommentsService from '../../logic/services/commentsService';
+import PatternService from '../../logic/services/patternServices';
 
 import PatternPrint from './patternPrint';
 import ToExport from './toExport2';
 
 import {
+    Input,
     ItemDetail,
     ItemHeader,
     ItemLabel,
@@ -19,7 +25,9 @@ import {
     TagRow,
     CancelButton,
     LinkButton,
+    SuccessButton,
     HelperText,
+    UserInfoRow,
 } from '../../design/styledComponents';
 
 interface PropsType {
@@ -30,9 +38,83 @@ interface PropsType {
 
 const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, currentPattern }) => {
     const { user } = useContext(UserContext);
+    const { allUsers } = useContext(UsersContext);
+
+    const [comments, setComments] = useState<commentType[]>([]);
+    const [commentMessage, setComment] = useState<string>('');
+    const [showAddComment, setShowAddComment] = useState<boolean>(false);
 
     const handleClose = () => {
         closeModal();
+    };
+
+    const onDataChange = useCallback(
+        (items: any) => {
+            let loadedComments: commentType[] = [];
+            loadedComments = [];
+
+            items.docs.forEach((item: any) => {
+                const { id } = item;
+                const data = item.data();
+
+                loadedComments.push({
+                    id,
+                    patternId: data.patternId,
+                    message: data.message,
+                    by: allUsers.find((u) => u.uid === data.by),
+                    dateCreated: data.dateCreated,
+                });
+            });
+
+            setComments(
+                loadedComments.sort((c1: commentType, c2: commentType) =>
+                    c1.dateCreated > c2.dateCreated ? -1 : 1,
+                ),
+            );
+        },
+        [allUsers],
+    );
+
+    useEffect(() => {
+        const unsubscribe = CommentsService.getAll()
+            .where('patternId', '==', currentPattern?.id)
+            .onSnapshot(onDataChange);
+
+        return () => {
+            unsubscribe();
+        };
+    }, [onDataChange, currentPattern]);
+
+    const showAddCommentToggle = () => {
+        setShowAddComment(!showAddComment);
+    };
+
+    const addComment = () => {
+        if (currentPattern) {
+            const newComment: commentToAdd = {
+                patternId: currentPattern.id,
+                message: commentMessage,
+                by: user?.uid ? user.uid : '',
+                dateCreated: moment().unix(),
+            };
+            CommentsService.create(newComment);
+
+            const commentAmount = currentPattern.comments + 1;
+            PatternService.updateComments(currentPattern.id, commentAmount);
+
+            setShowAddComment(false);
+        }
+    };
+
+    const removeComment = (id: string) => {
+        if (currentPattern) {
+            CommentsService.remove(id);
+
+            const commentAmount = currentPattern.comments - 1;
+            PatternService.updateComments(currentPattern.id, commentAmount);
+
+            setShowAddComment(false);
+        }
     };
 
     return (
@@ -93,7 +175,9 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             <ItemLabel>Description</ItemLabel>
             <Description
                 dangerouslySetInnerHTML={{
-                    __html: currentPattern?.description ? currentPattern.description : '',
+                    __html: currentPattern?.description
+                        ? currentPattern.description
+                        : 'No description here :c',
                 }}
             />
 
@@ -123,6 +207,62 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                 ))}
             </>
             <Difficulty difficulty={currentPattern?.difficulty ? currentPattern?.difficulty : 3} />
+
+            <ItemLabel>
+                Comments{' '}
+                <LinkButton block={false} onClick={showAddCommentToggle}>
+                    <FontAwesomeIcon icon={['fas', 'plus']} />
+                </LinkButton>
+            </ItemLabel>
+            {showAddComment && (
+                <>
+                    <Input
+                        block
+                        name="comment"
+                        placeholder="Enter your comment <3"
+                        value={commentMessage}
+                        style={{ marginBottom: '1em' }}
+                        onChange={(e) =>
+                            setComment(e.target.value ? e.target.value.toString() : '')
+                        }
+                    />
+                    <ButtonRow style={{ marginBottom: '1em' }}>
+                        <CancelButton block={false} onClick={showAddCommentToggle}>
+                            Cancel
+                        </CancelButton>
+                        <SuccessButton block={false} onClick={addComment}>
+                            Comment
+                        </SuccessButton>
+                    </ButtonRow>
+                </>
+            )}
+            <>
+                {comments.map((comment: commentType) => (
+                    <Description key={comment.id} style={{ marginBottom: '1em' }}>
+                        <UserInfoRow>
+                            <Link to={`/profile/${comment.by?.uid}`}>
+                                <img
+                                    key={comment.by?.uid}
+                                    src={comment.by?.avatar ? comment.by.avatar : undefined}
+                                    alt={comment.by?.avatar ? comment.by.avatar : undefined}
+                                />
+                                <span>{comment.by?.username}</span>
+                            </Link>
+                            <HelperText style={{ marginLeft: '1em' }}>
+                                {moment.unix(comment.dateCreated).format('DD.MM.YYYY HH:mm')}
+                            </HelperText>
+                            <InvisibleIconButton
+                                style={{ fontSize: '1em', float: 'right' }}
+                                red
+                                onClick={() => removeComment(comment.id)}
+                            >
+                                <FontAwesomeIcon icon={['fas', 'trash']} />
+                            </InvisibleIconButton>
+                        </UserInfoRow>
+                        {comment.message}
+                    </Description>
+                ))}
+            </>
 
             <ButtonRow>
                 <CancelButton block onClick={handleClose}>

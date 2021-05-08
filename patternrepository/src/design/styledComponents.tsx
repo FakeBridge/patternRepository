@@ -173,7 +173,6 @@ export const IconButton = styled.button`
 
 export const InvisibleIconButton = styled.button<{ red: boolean }>`
     height: 1em;
-    width: 1em;
     padding: 0px !important;
     background-color: transparent !important;
     color: ${(props) => (props.red ? dangerColour : accentColourDark)};
@@ -185,7 +184,10 @@ export const InvisibleIconButton = styled.button<{ red: boolean }>`
     svg {
         vertical-align: inherit;
         height: inherit;
-        width: inherit !important;
+    }
+
+    span {
+        vertical-align: text-bottom !important;
     }
 `;
 
@@ -207,7 +209,7 @@ export const Input = styled.input<{ block: boolean }>`
     }
 `;
 
-export const DifficultyInput = styled(Input)<{ difficulty: number }>`
+export const DifficultyInput = styled(Input)`
     background: linear-gradient(to right, #729b79, #8c9080, #a78586, #c17b8d, #db7093);
     border: none;
     height: 0.5em;
@@ -274,6 +276,20 @@ export const DangerAlert = styled(Alert)`
 export const FormGroup = styled.form`
     display: block;
     margin-bottom: 1.5em;
+`;
+
+export const AdvancedSearch = styled.section`
+    display: block;
+`;
+
+export const SearchGroup = styled.form`
+    display: inline-block;
+    width: 30%;
+    margin: 1em 1.5%;
+
+    label {
+        margin-left: 0.2em;
+    }
 `;
 
 export const PageHeader = styled.div`
@@ -421,11 +437,10 @@ export const Difficulty = styled.hr<{ difficulty: number }>`
     border-radius: 5px;
 `;
 
-export const BottomInfoRow = styled.section<{ liked: boolean }>`
+export const BottomInfoRow = styled.section`
     width: 100%;
     display: block;
     margin: 1em 0px 0px 0px;
-    color: ${(props) => (props.liked ? dangerColour : fontColour)};
 
     span {
         padding-left: 0.2em;

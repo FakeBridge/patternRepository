@@ -228,7 +228,6 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             finishedWorkImages: [...finishedWorkImages, ...newFinishedWorkImages],
             tags: tags.map((t) => t.id),
             books: books.map((b) => b.id),
-            likes: 0,
         };
 
         PatternService.update(id, data)
@@ -357,7 +356,6 @@ const EditPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                     max={5}
                     step={1}
                     value={difficulty}
-                    difficulty={difficulty}
                     onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
                 />
             </FormGroup>

@@ -94,6 +94,7 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
                         : [],
                     likes: data.likes ? data.likes : 0,
                     dateCreated: data.dateCreated ? data.dateCreated : -1,
+                    comments: data.comments ? data.comments : 0,
                 });
             });
 

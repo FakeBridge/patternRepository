@@ -3,6 +3,7 @@ import Select from 'react-select';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import moment from 'moment';
 
 import { UserContext } from '../../logic/providers/userProvider';
 import { TagContext } from '../../logic/providers/tagProvider';
@@ -224,6 +225,8 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal, copyPattern })
             tags: tags.map((t) => t.id),
             books: books.map((b) => b.id),
             likes: 0,
+            dateCreated: moment().unix(),
+            comments: 0,
         };
 
         PatternService.set(id, data)
@@ -341,7 +344,6 @@ const AddPattern: React.FC<PropsType> = React.memo(({ closeModal, copyPattern })
                     max={5}
                     step={1}
                     value={difficulty}
-                    difficulty={difficulty}
                     onChange={(e) => setDifficulty(parseInt(e.target.value, 10))}
                 />
             </FormGroup>

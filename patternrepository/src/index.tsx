@@ -11,6 +11,10 @@ import {
     faCopy,
     faInfoCircle,
     faHeart,
+    faArrowUp,
+    faArrowDown,
+    faPlus,
+    faCommentAlt,
 } from '@fortawesome/free-solid-svg-icons';
 
 import App from './components/App';
@@ -18,7 +22,20 @@ import App from './components/App';
 import 'bootstrap/dist/css/bootstrap.css';
 import './design/styles.scss';
 
-library.add(fab, faTrash, faPrint, faFileDownload, faSpinner, faCopy, faInfoCircle, faHeart);
+library.add(
+    fab,
+    faTrash,
+    faPrint,
+    faFileDownload,
+    faSpinner,
+    faCopy,
+    faInfoCircle,
+    faHeart,
+    faArrowUp,
+    faArrowDown,
+    faPlus,
+    faCommentAlt,
+);
 
 ReactDOM.render(
     <React.StrictMode>

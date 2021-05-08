@@ -27,6 +27,7 @@ export type pattern = {
     books: book[];
     likes: number;
     dateCreated?: number;
+    comments: number;
 };
 
 export type patternToAdd = {
@@ -38,7 +39,9 @@ export type patternToAdd = {
     finishedWorkImages: basicImage[];
     tags: string[];
     books: string[];
-    likes: number;
+    likes?: number;
+    dateCreated?: number;
+    comments?: number;
 };
 
 export type basicImage = {
@@ -75,4 +78,19 @@ export type bookInfo = {
     value?: string;
     colour: string;
     owner?: string | null;
+};
+
+export type comment = {
+    id: string;
+    patternId: string;
+    message: string;
+    by?: userInfo;
+    dateCreated: number;
+};
+
+export type commentToAdd = {
+    patternId: string;
+    message: string;
+    by: string;
+    dateCreated: number;
 };

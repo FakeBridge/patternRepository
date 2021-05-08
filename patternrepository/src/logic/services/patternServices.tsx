@@ -34,6 +34,10 @@ const updateLikes = (id: string, value: number) => {
     return collectionRef.doc(id).update({ likes: value });
 };
 
+const updateComments = (id: string, value: number) => {
+    return collectionRef.doc(id).update({ comments: value });
+};
+
 const remove = (id: string) => {
     return collectionRef.doc(id).delete();
 };
@@ -44,6 +48,7 @@ const PatternService = {
     getAllOfUser,
     set,
     updateLikes,
+    updateComments,
     create,
     update,
     remove,

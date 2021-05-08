@@ -8,7 +8,12 @@ import { BookContext } from '../../logic/providers/bookProvider';
 import { UsersContext } from '../../logic/providers/usersProvider';
 import { UserContext } from '../../logic/providers/userProvider';
 
-import { pattern as patternType, basicImage } from '../../logic/types';
+import {
+    pattern as patternType,
+    basicImage,
+    tag as tagType,
+    book as bookType,
+} from '../../logic/types';
 
 import {
     ItemList,
@@ -27,11 +32,39 @@ import {
 interface PropsType {
     setCurrentPattern: (pattern: patternType) => void;
     setCopyPattern: (pattern: patternType) => void;
+    sortBy: string;
+    ascending: boolean;
     searchTitle: string;
+    withDifficulty: boolean;
+    difficulty: number;
+    withTags: boolean;
+    tags: tagType[];
+    withBooks: boolean;
+    books: bookType[];
+    owner: string;
+    withOwner: boolean;
+    likedStatus: number;
+    withLikedStatus: boolean;
 }
 
 const List: React.FC<PropsType> = React.memo(
-    ({ setCurrentPattern, setCopyPattern, searchTitle }) => {
+    ({
+        setCurrentPattern,
+        setCopyPattern,
+        searchTitle,
+        difficulty,
+        withDifficulty,
+        tags: searchTags,
+        withTags: searchWithTags,
+        books: searchBooks,
+        withBooks: searchWithBooks,
+        owner: searchOwner,
+        withOwner: searchWithOwner,
+        likedStatus,
+        withLikedStatus,
+        sortBy,
+        ascending,
+    }) => {
         const { user } = useContext(UserContext);
         const { allTags } = useContext(TagContext);
         const { allBooks } = useContext(BookContext);
@@ -70,6 +103,7 @@ const List: React.FC<PropsType> = React.memo(
                             : [],
                         likes: data.likes ? data.likes : 0,
                         dateCreated: data.dateCreated ? data.dateCreated : -1,
+                        comments: data.comments ? data.comments : 0,
                     });
                 });
 
@@ -110,10 +144,64 @@ const List: React.FC<PropsType> = React.memo(
         };
 
         const FILTERED_PATTERNS = useMemo(() => {
-            return patterns.filter((pattern: patternType) =>
-                pattern.title?.toLowerCase().includes(searchTitle.toLowerCase()),
-            );
-        }, [searchTitle, patterns]);
+            return patterns
+                .filter(
+                    (pattern: patternType) =>
+                        pattern.title?.toLowerCase().includes(searchTitle.toLowerCase()) &&
+                        (withDifficulty ? pattern.difficulty === difficulty : true) &&
+                        (searchWithTags
+                            ? searchTags.every((t1: tagType) =>
+                                  pattern.tags.find((t2: tagType) => t1.id === t2.id),
+                              )
+                            : true) &&
+                        (searchWithBooks
+                            ? searchBooks.every((b1: bookType) =>
+                                  pattern.books.find((b2: bookType) => b1.id === b2.id),
+                              )
+                            : true) &&
+                        (searchWithOwner && searchOwner.length > 0
+                            ? pattern.owner?.uid === searchOwner
+                            : true) &&
+                        (withLikedStatus && likedStatus === 1
+                            ? likedPatterns.includes(pattern.id)
+                            : true) &&
+                        (withLikedStatus && likedStatus === 2
+                            ? !likedPatterns.includes(pattern.id)
+                            : true),
+                )
+                .sort((p1: patternType, p2: patternType) => {
+                    let value1: any = p1?.dateCreated ? p1.dateCreated : -1;
+                    let value2: any = p2?.dateCreated ? p2.dateCreated : -1;
+                    if (sortBy === 'title') {
+                        value1 = p1.title;
+                        value2 = p2.title;
+                    }
+                    if (sortBy === 'liked') {
+                        value1 = p1.likes;
+                        value2 = p2.likes;
+                    }
+                    if (ascending) {
+                        return value1 > value2 ? 1 : -1;
+                    }
+                    return value1 > value2 ? -1 : 1;
+                });
+        }, [
+            searchTitle,
+            patterns,
+            difficulty,
+            withDifficulty,
+            searchWithTags,
+            searchTags,
+            searchWithBooks,
+            searchBooks,
+            searchWithOwner,
+            searchOwner,
+            likedStatus,
+            withLikedStatus,
+            likedPatterns,
+            ascending,
+            sortBy,
+        ]);
 
         return (
             <ItemList>
@@ -177,7 +265,7 @@ const List: React.FC<PropsType> = React.memo(
                                     <span>{pattern.owner?.username}</span>
                                 </Link>
                             </UserInfoRow>
-                            <BottomInfoRow liked={likedPatterns.includes(pattern.id)}>
+                            <BottomInfoRow>
                                 <InvisibleIconButton
                                     red={likedPatterns.includes(pattern.id)}
                                     onClick={() =>
@@ -188,8 +276,17 @@ const List: React.FC<PropsType> = React.memo(
                                     }
                                 >
                                     <FontAwesomeIcon icon={['fas', 'heart']} />
+                                    <span>{pattern.likes}</span>
                                 </InvisibleIconButton>
-                                <span>{pattern.likes}</span>
+
+                                <InvisibleIconButton
+                                    style={{ marginLeft: '1em' }}
+                                    red={false}
+                                    onClick={() => {}}
+                                >
+                                    <FontAwesomeIcon icon={['fas', 'comment-alt']} />
+                                    <span>{pattern.comments}</span>
+                                </InvisibleIconButton>
                             </BottomInfoRow>
                         </ItemDetail>
                     </Item>
