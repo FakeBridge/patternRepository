@@ -1,13 +1,30 @@
 import React, { useContext, useEffect, useCallback, useState } from 'react';
+import {
+    FacebookShareButton,
+    FacebookIcon,
+    TumblrShareButton,
+    TumblrIcon,
+    TwitterShareButton,
+    TwitterIcon,
+    EmailShareButton,
+    EmailIcon,
+} from 'react-share';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { UserContext } from '../../logic/providers/userProvider';
 import { UsersContext } from '../../logic/providers/usersProvider';
-import { pattern as patternType, comment as commentType, commentToAdd } from '../../logic/types';
+import {
+    pattern as patternType,
+    comment as commentType,
+    commentToAdd,
+    noteToAdd,
+} from '../../logic/types';
 import CommentsService from '../../logic/services/commentsService';
 import PatternService from '../../logic/services/patternServices';
+import NoteService from '../../logic/services/noteServices';
+import { firestore } from '../../logic/firebase';
 
 import PatternPrint from './patternPrint';
 import ToExport from './toExport2';
@@ -102,6 +119,22 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
             const commentAmount = currentPattern.comments + 1;
             PatternService.updateComments(currentPattern.id, commentAmount);
 
+            const newNote: noteToAdd = {
+                by: user?.uid ? user.uid : 'none',
+                message: `${user?.username} just left a comment on one of your patterns!${currentPattern.title}-${currentPattern.id}`,
+                dateCreated: moment().unix(),
+                to: currentPattern.owner?.uid ? currentPattern.owner.uid : '',
+                seen: false,
+            };
+            NoteService.create(newNote);
+
+            firestore
+                .collection(`users`)
+                .doc(currentPattern.owner?.uid ? currentPattern.owner.uid : '')
+                .update({
+                    hasUnreadNotes: true,
+                });
+
             setShowAddComment(false);
         }
     };
@@ -147,6 +180,34 @@ const ViewPattern: React.FC<PropsType> = React.memo(({ openEdit, closeModal, cur
                         )
                     }
                 </PDFDownloadLink>
+
+                <EmailShareButton
+                    subject={`${currentPattern ? currentPattern.title : ''}`}
+                    body="Look at my cool pattern over at patternRepository!"
+                    url={`https://patternrepository-e8c44.web.app/patterns/${currentPattern?.id}`}
+                >
+                    <EmailIcon size={32} round />
+                </EmailShareButton>
+                <FacebookShareButton
+                    quote="Look at my cool pattern over at patternRepository!"
+                    url={`https://patternrepository-e8c44.web.app/patterns/${currentPattern?.id}`}
+                >
+                    <FacebookIcon size={32} round />
+                </FacebookShareButton>
+                <TumblrShareButton
+                    title="Look at my cool pattern over at patternRepository!"
+                    tags={['sewing', 'pattern']}
+                    url={`https://patternrepository-e8c44.web.app/patterns/${currentPattern?.id}`}
+                >
+                    <TumblrIcon size={32} round />
+                </TumblrShareButton>
+                <TwitterShareButton
+                    title="Look at my cool pattern over at patternRepository!"
+                    hashtags={['sewing', 'pattern']}
+                    url={`https://patternrepository-e8c44.web.app/patterns/${currentPattern?.id}`}
+                >
+                    <TwitterIcon size={32} round />
+                </TwitterShareButton>
             </ButtonRow>
 
             <ItemHeader>{currentPattern ? currentPattern.title : 'Untitled'}</ItemHeader>

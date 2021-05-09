@@ -1,6 +1,9 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { useLocation, Link } from 'react-router-dom';
+import moment from 'moment';
 import { UncontrolledCarousel, Modal } from 'reactstrap';
+import NoteService from '../../logic/services/noteServices';
+import { firestore } from '../../logic/firebase';
 
 import { UsersContext } from '../../logic/providers/usersProvider';
 import { UserContext } from '../../logic/providers/userProvider';
@@ -9,7 +12,7 @@ import { TagContext } from '../../logic/providers/tagProvider';
 
 import BookContainer from '../patternList/books/bookContainer';
 
-import { userInfo, book as bookType, pattern as patternType } from '../../logic/types';
+import { userInfo, book as bookType, pattern as patternType, noteToAdd } from '../../logic/types';
 import PatternService from '../../logic/services/patternServices';
 import FollowedUsersService from '../../logic/services/followedUsersService';
 
@@ -34,16 +37,13 @@ interface PropsType {
     openEdit: (open: boolean) => void;
 }
 
-const items2 = [
-    {
-        src:
-            'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_15ba800aa1d%20text%20%7B%20fill%3A%23555%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A40pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_15ba800aa1d%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22285.921875%22%20y%3D%22218.3%22%3EFirst%20slide%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E',
-        altText: 'Image could not be showcased',
-        header: 'You have no images to show here yet :c',
-        key: '1',
-    },
-];
-
+const noImagesToShow = {
+    src:
+        'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22800%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%20400%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3Cstyle%20type%3D%22text%2Fcss%22%3E%23holder_15ba800aa1d%20text%20%7B%20fill%3A%23555%3Bfont-weight%3Anormal%3Bfont-family%3AHelvetica%2C%20monospace%3Bfont-size%3A40pt%20%7D%20%3C%2Fstyle%3E%3C%2Fdefs%3E%3Cg%20id%3D%22holder_15ba800aa1d%22%3E%3Crect%20width%3D%22800%22%20height%3D%22400%22%20fill%3D%22%23777%22%3E%3C%2Frect%3E%3Cg%3E%3Ctext%20x%3D%22285.921875%22%20y%3D%22218.3%22%3EFirst%20slide%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E',
+    altText: 'Image could not be showcased',
+    header: 'You have no images to show here yet :c',
+    key: '1',
+};
 const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
     const { user: currentUser } = useContext(UserContext);
     const { allUsers } = useContext(UsersContext);
@@ -57,6 +57,9 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
     const [patterns, setPatterns] = useState<patternType[]>([]);
     const [followedUsers, setFollowedUsers] = useState<userInfo[]>([]);
     const [myFollowedUsers, setMyFollowedUsers] = useState<string[]>([]);
+    const [imagesToShow, setImagesToShow] = useState<
+        { src: string; altText: string; header: string; key: string }[]
+    >([noImagesToShow]);
 
     const uid = useLocation().pathname.substring(9);
 
@@ -71,6 +74,14 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
         (items: any) => {
             let loadedPatterns: patternType[] = [];
             loadedPatterns = [];
+
+            let newImagesToShow: {
+                src: string;
+                altText: string;
+                header: string;
+                key: string;
+            }[] = [];
+            newImagesToShow = [];
 
             items.docs.forEach((item: any) => {
                 const { id } = item;
@@ -96,6 +107,17 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
                     dateCreated: data.dateCreated ? data.dateCreated : -1,
                     comments: data.comments ? data.comments : 0,
                 });
+
+                newImagesToShow = newImagesToShow.concat(
+                    data.finishedWorkImages.map(
+                        (img: { name: string; url: string }, index: number) => ({
+                            src: img.url,
+                            altText: img.name,
+                            header: `${data.title} - ${index}`,
+                            key: `${data.title} - ${index}`,
+                        }),
+                    ),
+                );
             });
 
             setPatterns(
@@ -106,6 +128,12 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
                         : -1,
                 ),
             );
+
+            if (newImagesToShow.length === 0) {
+                setImagesToShow([noImagesToShow]);
+            } else {
+                setImagesToShow(newImagesToShow);
+            }
         },
         [allTags, allBooks, user],
     );
@@ -156,18 +184,31 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
         return patterns.filter((p: patternType) => p.books.some((b: bookType) => b.id === bookId));
     };
 
-    const changeFollow = (userId: string) => {
+    const changeFollow = () => {
         let newMyFollowedUsers: string[] = [];
-        if (myFollowedUsers.includes(userId)) {
-            newMyFollowedUsers = [...myFollowedUsers.filter((id) => id !== userId)];
+        if (myFollowedUsers.includes(uid)) {
+            newMyFollowedUsers = [...myFollowedUsers.filter((id) => id !== uid)];
         } else {
-            newMyFollowedUsers = [...myFollowedUsers, userId];
+            newMyFollowedUsers = [...myFollowedUsers, uid];
         }
 
         FollowedUsersService.setFollowed(
             currentUser?.uid ? currentUser.uid : '',
             newMyFollowedUsers,
         );
+
+        const newNote: noteToAdd = {
+            by: currentUser?.uid ? currentUser.uid : 'none',
+            message: `${currentUser?.username} is now following you!`,
+            dateCreated: moment().unix(),
+            to: uid,
+            seen: false,
+        };
+        NoteService.create(newNote);
+
+        firestore.collection(`users`).doc(uid).update({
+            hasUnreadNotes: true,
+        });
     };
 
     return (
@@ -183,17 +224,17 @@ const ProfileView: React.FC<PropsType> = ({ openEdit }) => {
             )}
 
             <MarginItemDetail>
-                <UncontrolledCarousel items={items2} />
+                <UncontrolledCarousel items={imagesToShow} />
                 <ProfileHeader>
                     <img src={user?.avatar ? user.avatar : noAvatar} alt="avatar" />
                     <ItemHeader>{`${user?.username}`}</ItemHeader>
                     {uid !== currentUser?.uid && !myFollowedUsers.includes(uid) && (
-                        <SuccessButton block={false} onClick={() => changeFollow(uid)}>
+                        <SuccessButton block={false} onClick={() => changeFollow()}>
                             Follow
                         </SuccessButton>
                     )}
                     {uid !== currentUser?.uid && myFollowedUsers.includes(uid) && (
-                        <DangerButton block={false} onClick={() => changeFollow(uid)}>
+                        <DangerButton block={false} onClick={() => changeFollow()}>
                             Unfollow
                         </DangerButton>
                     )}

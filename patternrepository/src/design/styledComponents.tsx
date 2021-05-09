@@ -209,6 +209,24 @@ export const Input = styled.input<{ block: boolean }>`
     }
 `;
 
+export const Textarea = styled.textarea`
+    width: 100%;
+    height: 10em;
+    padding-left: 0.4em;
+    padding-right: 0.4em;
+    border-radius: 5px;
+    border: 1px solid ${fontColour};
+    outline: none !important;
+    color: ${fontColour};
+    background-color: ${mainColour};
+    &:focus {
+        background-color: ${accentColor};
+    }
+    ::placeholder {
+        color: ${fontColour};
+    }
+`;
+
 export const DifficultyInput = styled(Input)`
     background: linear-gradient(to right, #729b79, #8c9080, #a78586, #c17b8d, #db7093);
     border: none;
@@ -363,7 +381,7 @@ export const ItemDetail = styled(Card)`
     img {
         display: inline;
         object-fit: cover;
-        heigth: 100px;
+        height: 100px;
         width: 49%;
         margin: 0px 1% 1% 0px;
         &:last-child {
@@ -374,6 +392,16 @@ export const ItemDetail = styled(Card)`
 
 export const MarginItemDetail = styled(ItemDetail)`
     margin: 2em 0em;
+    img {
+        display: inline;
+        object-fit: cover;
+        height: 500px;
+        width: 49%;
+        margin: 0px 1% 1% 0px;
+        &:last-child {
+            margin-right: 0em;
+        }
+    }
 `;
 
 export const BookButton = styled.button<{ colour: string }>`
@@ -403,7 +431,7 @@ export const ProfileHeader = styled.section`
     img {
         display: inline;
         object-fit: cover;
-        heigth: 100px;
+        height: 100px;
         width: 100px;
     }
 `;
@@ -500,6 +528,10 @@ export const Description = styled.section`
     color: ${fontColour};
     padding: 0.5em;
     border-radius: 5px;
+    a {
+        color: ${fontColour};
+        text-decoration: underline;
+    }
 `;
 
 export const FormImageContainer = styled.section`

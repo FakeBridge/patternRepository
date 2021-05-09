@@ -26,6 +26,7 @@ const UsersProvider: React.FC<PropsType> = ({ children }) => {
                 email: data.email,
                 description: data.description,
                 darkTheme: data.darkTheme,
+                hasUnreadNotes: data.hasUnreadNotes ? data.hasUnreadNotes : false,
             });
         });
 

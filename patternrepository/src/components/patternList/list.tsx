@@ -1,18 +1,22 @@
 import React, { useState, useEffect, useCallback, useContext, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link } from 'react-router-dom';
+import moment from 'moment';
+import { Link, useLocation, useHistory } from 'react-router-dom';
 import PatternService from '../../logic/services/patternServices';
 import LikedPatternsService from '../../logic/services/likedPatternsServices';
 import { TagContext } from '../../logic/providers/tagProvider';
 import { BookContext } from '../../logic/providers/bookProvider';
 import { UsersContext } from '../../logic/providers/usersProvider';
 import { UserContext } from '../../logic/providers/userProvider';
+import NoteService from '../../logic/services/noteServices';
+import { firestore } from '../../logic/firebase';
 
 import {
     pattern as patternType,
     basicImage,
     tag as tagType,
     book as bookType,
+    noteToAdd,
 } from '../../logic/types';
 
 import {
@@ -74,6 +78,19 @@ const List: React.FC<PropsType> = React.memo(
 
         const [likedPatterns, setLikedPatterns] = useState<string[]>([]);
 
+        const location = useLocation();
+
+        const currentPatternId = useMemo(() => {
+            let id = location.pathname.substring(10);
+            if (id.includes('?')) {
+                const endIndex = id.indexOf('?');
+                id = id.substring(0, endIndex);
+            }
+            return id;
+        }, [location.pathname]);
+
+        const history = useHistory();
+
         const onDataChange = useCallback(
             (items: any) => {
                 let loadedPatterns: patternType[] = [];
@@ -128,6 +145,17 @@ const List: React.FC<PropsType> = React.memo(
             };
         }, [onDataChange, onLikedDataChange, user]);
 
+        useEffect(() => {
+            if (currentPatternId.length > 0) {
+                const foundPattern = patterns.find(
+                    (pattern: patternType) => pattern.id === currentPatternId,
+                );
+                if (foundPattern) {
+                    setCurrentPattern(foundPattern);
+                }
+            }
+        }, [setCurrentPattern, currentPatternId, patterns]);
+
         const changeLike = (patternData: patternType, by: number) => {
             if (user?.uid) {
                 const likes = patternData.likes + by;
@@ -140,6 +168,23 @@ const List: React.FC<PropsType> = React.memo(
                     newLiked = likedPatterns.filter((p) => p !== patternData.id);
                 }
                 LikedPatternsService.setLiked(user.uid, newLiked);
+                if (by > 0) {
+                    const newNote: noteToAdd = {
+                        by: user?.uid ? user.uid : 'none',
+                        message: `${user?.username} just liked your pattern!${patternData.title}-${patternData.id}`,
+                        dateCreated: moment().unix(),
+                        to: patternData.owner?.uid ? patternData.owner.uid : '',
+                        seen: false,
+                    };
+                    NoteService.create(newNote);
+
+                    firestore
+                        .collection(`users`)
+                        .doc(patternData.owner?.uid ? patternData.owner.uid : '')
+                        .update({
+                            hasUnreadNotes: true,
+                        });
+                }
             }
         };
 
@@ -211,15 +256,16 @@ const List: React.FC<PropsType> = React.memo(
                             <ButtonRow>
                                 <InvisibleIconButton
                                     red={false}
-                                    onClick={() => setCurrentPattern(pattern)}
+                                    onClick={() => {
+                                        setCurrentPattern(pattern);
+                                        history.push(`/patterns/${pattern.id}`);
+                                    }}
                                 >
                                     <FontAwesomeIcon icon={['fas', 'info-circle']} />
                                 </InvisibleIconButton>
                                 <InvisibleIconButton
                                     red={false}
-                                    onClick={() => {
-                                        setCopyPattern(pattern);
-                                    }}
+                                    onClick={() => setCopyPattern(pattern)}
                                 >
                                     <FontAwesomeIcon icon={['fas', 'copy']} />
                                 </InvisibleIconButton>

@@ -15,6 +15,7 @@ import {
     faArrowDown,
     faPlus,
     faCommentAlt,
+    faCircle,
 } from '@fortawesome/free-solid-svg-icons';
 
 import App from './components/App';
@@ -35,6 +36,7 @@ library.add(
     faArrowDown,
     faPlus,
     faCommentAlt,
+    faCircle,
 );
 
 ReactDOM.render(

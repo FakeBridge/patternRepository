@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import Select from 'react-select';
+import { useHistory } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Modal } from 'reactstrap';
 import AddPattern from './addPattern';
@@ -12,7 +13,6 @@ import { searchStyle } from '../../design/selectStyles';
 
 import TagProvider from '../../logic/providers/tagProvider';
 import BookProvider from '../../logic/providers/bookProvider';
-import UsersProvider from '../../logic/providers/usersProvider';
 import { pattern as patternType, tag, book } from '../../logic/types';
 
 import {
@@ -63,6 +63,8 @@ const PatternList: React.FC = React.memo(() => {
     });
     const [ascending, setAscending] = useState<boolean>(true);
 
+    const history = useHistory();
+
     const modalAddToggle = useCallback(() => {
         setModalAddOpen(!modalAddOpen);
         setCopyPattern(null);
@@ -72,135 +74,132 @@ const PatternList: React.FC = React.memo(() => {
         setModalAddBookOpen(!modalAddBookOpen);
     }, [modalAddBookOpen]);
 
-    const closeContainerModal = useCallback(() => setCurrentPattern(emptyPattern), []);
+    const closeContainerModal = useCallback(() => {
+        setCurrentPattern(emptyPattern);
+        history.push('/patterns');
+    }, [history]);
 
     return (
-        <UsersProvider>
-            <TagProvider>
-                <BookProvider>
-                    <Main>
-                        <SearchCard>
-                            <>
-                                <Input
-                                    block={false}
-                                    style={{ marginRight: '1em' }}
-                                    name="patternSearch"
-                                    placeholder="Search in titles"
-                                    value={searchTitle}
-                                    onChange={(e) =>
-                                        setSearchTitle(
-                                            e.target.value ? e.target.value.toString() : '',
-                                        )
-                                    }
-                                />
-                                <div style={{ width: '20%', display: 'inline-block' }}>
-                                    <Select
-                                        styles={searchStyle}
-                                        options={[
-                                            { label: 'Sort by TITLE', value: 'title' },
-                                            { label: 'Sort by LIKED', value: 'liked' },
-                                            { label: 'Sort by DATE ADDED', value: 'dateCreated' },
-                                        ]}
-                                        value={sortBy}
-                                        onChange={(e) => {
-                                            setSortBy(e);
-                                        }}
-                                    />
-                                </div>
-                                <InvisibleIconButton
-                                    style={{ height: '30px', marginRight: '1em' }}
-                                    red={false}
-                                    onClick={() => setAscending(!ascending)}
-                                >
-                                    {ascending && (
-                                        <FontAwesomeIcon
-                                            style={{ verticalAlign: 'middle' }}
-                                            icon={['fas', 'arrow-up']}
-                                        />
-                                    )}
-                                    {!ascending && (
-                                        <FontAwesomeIcon
-                                            style={{ verticalAlign: 'middle' }}
-                                            icon={['fas', 'arrow-down']}
-                                        />
-                                    )}
-                                </InvisibleIconButton>
-
-                                <CancelButton
-                                    style={{ marginRight: '1em' }}
-                                    block={false}
-                                    onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                                >
-                                    Advanced
-                                </CancelButton>
-
-                                <SuccessButton
-                                    style={{ marginRight: '1em' }}
-                                    block={false}
-                                    onClick={modalAddToggle}
-                                >
-                                    + Pattern
-                                </SuccessButton>
-                                <SuccessButton block={false} onClick={modalAddBookToggle}>
-                                    + Book
-                                </SuccessButton>
-                            </>
-                            <Search
-                                show={showAdvancedSearch}
-                                setSearchDifficulty={(value) => setSearchDifficulty(value)}
-                                setSearchWithDifficulty={(value) => setSearchWithDifficulty(value)}
-                                setSearchTags={(value) => setSearchTags(value)}
-                                setSearchWithTags={(value) => setSearchWithTags(value)}
-                                setSearchBooks={(value) => setSearchBooks(value)}
-                                setSearchWithBooks={(value) => setSearchWithBooks(value)}
-                                setSearchOwner={(value) => setSearchOwner(value)}
-                                setSearchWithOwner={(value) => setSearchWithOwner(value)}
-                                setSearchLikedStatus={(value) => setSearchLikedStatus(value)}
-                                setSearchWithLikedStatus={(value) =>
-                                    setSearchWithLikedStatus(value)
+        <TagProvider>
+            <BookProvider>
+                <Main>
+                    <SearchCard>
+                        <>
+                            <Input
+                                block={false}
+                                style={{ marginRight: '1em' }}
+                                name="patternSearch"
+                                placeholder="Search in titles"
+                                value={searchTitle}
+                                onChange={(e) =>
+                                    setSearchTitle(e.target.value ? e.target.value.toString() : '')
                                 }
                             />
-                        </SearchCard>
+                            <div style={{ width: '20%', display: 'inline-block' }}>
+                                <Select
+                                    styles={searchStyle}
+                                    options={[
+                                        { label: 'Sort by TITLE', value: 'title' },
+                                        { label: 'Sort by LIKED', value: 'liked' },
+                                        { label: 'Sort by DATE ADDED', value: 'dateCreated' },
+                                    ]}
+                                    value={sortBy}
+                                    onChange={(e) => {
+                                        setSortBy(e);
+                                    }}
+                                />
+                            </div>
+                            <InvisibleIconButton
+                                style={{ height: '30px', marginRight: '1em' }}
+                                red={false}
+                                onClick={() => setAscending(!ascending)}
+                            >
+                                {ascending && (
+                                    <FontAwesomeIcon
+                                        style={{ verticalAlign: 'middle' }}
+                                        icon={['fas', 'arrow-up']}
+                                    />
+                                )}
+                                {!ascending && (
+                                    <FontAwesomeIcon
+                                        style={{ verticalAlign: 'middle' }}
+                                        icon={['fas', 'arrow-down']}
+                                    />
+                                )}
+                            </InvisibleIconButton>
 
-                        <List
-                            setCurrentPattern={setCurrentPattern}
-                            setCopyPattern={(pattern: patternType) => {
-                                setCopyPattern(pattern);
-                                setModalAddOpen(true);
-                            }}
-                            sortBy={sortBy.value}
-                            ascending={ascending}
-                            searchTitle={searchTitle}
-                            difficulty={searchDifficulty}
-                            withDifficulty={searchWithDifficulty}
-                            tags={searchTags}
-                            withTags={searchWithTags}
-                            books={searchBooks}
-                            withBooks={searchWithBooks}
-                            owner={searchOwner}
-                            withOwner={searchWithOwner}
-                            likedStatus={searchLikedStatus}
-                            withLikedStatus={searchWithLikedStatus}
+                            <CancelButton
+                                style={{ marginRight: '1em' }}
+                                block={false}
+                                onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                            >
+                                Advanced
+                            </CancelButton>
+
+                            <SuccessButton
+                                style={{ marginRight: '1em' }}
+                                block={false}
+                                onClick={modalAddToggle}
+                            >
+                                + Pattern
+                            </SuccessButton>
+                            <SuccessButton block={false} onClick={modalAddBookToggle}>
+                                + Book
+                            </SuccessButton>
+                        </>
+                        <Search
+                            show={showAdvancedSearch}
+                            setSearchDifficulty={(value) => setSearchDifficulty(value)}
+                            setSearchWithDifficulty={(value) => setSearchWithDifficulty(value)}
+                            setSearchTags={(value) => setSearchTags(value)}
+                            setSearchWithTags={(value) => setSearchWithTags(value)}
+                            setSearchBooks={(value) => setSearchBooks(value)}
+                            setSearchWithBooks={(value) => setSearchWithBooks(value)}
+                            setSearchOwner={(value) => setSearchOwner(value)}
+                            setSearchWithOwner={(value) => setSearchWithOwner(value)}
+                            setSearchLikedStatus={(value) => setSearchLikedStatus(value)}
+                            setSearchWithLikedStatus={(value) => setSearchWithLikedStatus(value)}
                         />
+                    </SearchCard>
 
-                        <Modal isOpen={modalAddBookOpen} toggle={modalAddBookToggle}>
-                            <AddBook closeModal={modalAddBookToggle} />
-                        </Modal>
+                    <List
+                        setCurrentPattern={setCurrentPattern}
+                        setCopyPattern={(pattern: patternType) => {
+                            setCopyPattern(pattern);
+                            setModalAddOpen(true);
+                        }}
+                        sortBy={sortBy.value}
+                        ascending={ascending}
+                        searchTitle={searchTitle}
+                        difficulty={searchDifficulty}
+                        withDifficulty={searchWithDifficulty}
+                        tags={searchTags}
+                        withTags={searchWithTags}
+                        books={searchBooks}
+                        withBooks={searchWithBooks}
+                        owner={searchOwner}
+                        withOwner={searchWithOwner}
+                        likedStatus={searchLikedStatus}
+                        withLikedStatus={searchWithLikedStatus}
+                    />
 
-                        <Modal isOpen={modalAddOpen} toggle={modalAddToggle}>
-                            <AddPattern closeModal={modalAddToggle} copyPattern={copyPattern} />
-                        </Modal>
+                    <Modal isOpen={modalAddBookOpen} toggle={modalAddBookToggle}>
+                        <AddBook closeModal={modalAddBookToggle} />
+                    </Modal>
 
-                        <Modal isOpen={currentPattern.id !== ''} toggle={closeContainerModal}>
-                            <PatternContainer
-                                closeModal={closeContainerModal}
-                                currentPattern={currentPattern}
-                            />
-                        </Modal>
-                    </Main>
-                </BookProvider>
-            </TagProvider>
-        </UsersProvider>
+                    <Modal isOpen={modalAddOpen} toggle={modalAddToggle}>
+                        <AddPattern closeModal={modalAddToggle} copyPattern={copyPattern} />
+                    </Modal>
+
+                    <Modal isOpen={currentPattern.id !== ''} toggle={closeContainerModal}>
+                        <PatternContainer
+                            closeModal={closeContainerModal}
+                            currentPattern={currentPattern}
+                        />
+                    </Modal>
+                </Main>
+            </BookProvider>
+        </TagProvider>
     );
 });
 

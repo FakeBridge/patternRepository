@@ -9,14 +9,32 @@ import {
 
 const styles = StyleSheet.create( {
   page: {
-    flexDirection: 'row',
     backgroundColor: '#FFF',
+    padding: 50,
   },
   section: {
-    margin: 10,
-    padding: 10,
+    marginBottom: 10,
     display: 'block',
-  }
+  },
+  h1: {
+    fontSize: "18px",
+    display: 'block',
+    marginBottom: 5,
+  },
+  h2: {
+    fontSize: "14px",
+    display: 'block',
+    marginBottom: 5,
+  },
+  text: {
+    padding: 10,
+    fontSize: "12px",
+    width: "auto",
+    display: 'inline',
+    paddingLeft: "10px",
+    backgroundColor: "#EEE",
+    borderRadius: 5,
+  },
 } );
 
 export default class ComponentToExport extends React.PureComponent {
@@ -31,41 +49,43 @@ export default class ComponentToExport extends React.PureComponent {
     } = this.props;
     const {
       title,
+      owner,
       tags,
       difficulty,
       books,
-      description,
+      description
     } = pattern;
+
     return (
       <Document>
         <Page size="A4" style={styles.page}>
           <View  style={styles.section}>
-            <Text>{title?.length > 0 ? title : 'Untitled'}</Text>
-              {tags.map((tag) => (
-                  <Text key={tag.id}>
-                      {' '}
-                      {tag.label}{' '}
-                  </Text>
-              ))}
+            <Text style={styles.h1}>{`${title} by ${owner}`}</Text>
           </View>
 
-                      <View style={styles.section}>
-          <Text>{`Difficulty: ${difficulty}`}</Text>
-            </View>
-
-            <View style={styles.section}>
-                {books?.map((book) => (
-                    <Text key={book.id} colour={book.colour}>
-                        {' '}
-                        {book.label}{' '}
-                    </Text>
-                ))}
-            </View>
-
-            <View style={styles.section}>
-            <Text>Description</Text>
-            <Text>{description}</Text>
+          <View style={styles.section}>
+            <Text style={styles.h2}>Tags</Text>
+            <Text style={styles.text}>
+              { tags.map((tag) => (tag.label)).join(", ") }
+            </Text>
         </View>
+
+          <View style={styles.section}>
+            <Text style={styles.h2}>{`Difficulty: ${difficulty}`}</Text>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.h2}>Books</Text>
+            <Text style={styles.text}>
+                { books.map((book) => (book.label)).join(", ") }
+          </Text>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.h2}>Description</Text>
+          <Text style={styles.text}>{description?.replace(/<\/?[^>]+(>|$)/g, "\n")}</Text>
+          </View>
+
 
         </Page>
       </Document>

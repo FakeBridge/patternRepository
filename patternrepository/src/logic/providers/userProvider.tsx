@@ -27,6 +27,9 @@ const UserProvider: React.FC<PropsType> = ({ children }) => {
                         avatar: signedUser?.avatar,
                         description: signedUser?.description,
                         darkTheme: signedUser?.darkTheme,
+                        hasUnreadNotes: signedUser?.hasUnreadNotes
+                            ? signedUser?.hasUnreadNotes
+                            : false,
                     },
                 });
             } else {

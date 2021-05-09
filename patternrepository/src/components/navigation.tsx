@@ -2,8 +2,12 @@ import React, { useContext } from 'react';
 import { Route, BrowserRouter } from 'react-router-dom';
 import Login from './login/index';
 import PageHeader from './pageHeader';
+import HomePage from './homePage';
+import Notes from './notes';
+import AdminContact from './adminContact';
 import Profile from './userProfile';
 import PatternList from './patternList';
+import UsersProvider from '../logic/providers/usersProvider';
 
 import Error from './generalComponents/errorCard';
 
@@ -18,19 +22,25 @@ const Navigation: React.FC = React.memo(() => {
         <Body>
             <Content>
                 <BrowserRouter>
-                    <PageHeader />
-                    {!user && <Route path="/" component={Login} />}
-                    {user && (
+                    <UsersProvider>
                         <>
-                            <Route
-                                exact
-                                path={['/', '/home', '/patterns']}
-                                component={PatternList}
-                            />
-                            <Route exact path="/profile" component={Error} />
-                            <Route exact path="/profile/:userID" component={Profile} />
+                            <PageHeader />
+                            {!user && <Route path="/" component={Login} />}
+                            {user && (
+                                <>
+                                    <Route
+                                        path={['/patterns', '/patterns/:patternID']}
+                                        component={PatternList}
+                                    />
+                                    <Route exact path={['/', '/home']} component={HomePage} />
+                                    <Route exact path="/profile" component={Error} />
+                                    <Route exact path="/profile/:userID" component={Profile} />
+                                    <Route exact path="/note-to-admins" component={AdminContact} />
+                                    <Route exact path="/notes" component={Notes} />
+                                </>
+                            )}
                         </>
-                    )}
+                    </UsersProvider>
                 </BrowserRouter>
             </Content>
         </Body>

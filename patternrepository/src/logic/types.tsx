@@ -7,6 +7,7 @@ export type userInfo = {
     avatar: string | null;
     description: string | null;
     darkTheme?: boolean;
+    hasUnreadNotes: boolean;
 };
 
 export type basicUser = {
@@ -93,4 +94,21 @@ export type commentToAdd = {
     message: string;
     by: string;
     dateCreated: number;
+};
+
+export type note = {
+    id: string;
+    by?: userInfo;
+    message: string;
+    dateCreated: number;
+    to?: userInfo;
+    seen: boolean;
+};
+
+export type noteToAdd = {
+    by: string;
+    message: string;
+    dateCreated: number;
+    to: string;
+    seen: boolean;
 };
