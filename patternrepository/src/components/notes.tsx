@@ -105,7 +105,7 @@ const Notes: React.FC = () => {
                                 <FontAwesomeIcon icon={['fas', 'trash']} />
                             </InvisibleIconButton>
                         </UserInfoRow>
-                        {!note.message.includes('pattern') && <span>note.message</span>}
+                        {!note.message.includes('pattern') && <span>{note.message}</span>}
                         {note.message.includes('pattern') && (
                             <>
                                 <span>
