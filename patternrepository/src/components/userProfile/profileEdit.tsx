@@ -1,12 +1,9 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { storage, firestore } from '../../logic/firebase';
 
 import { UserContext } from '../../logic/providers/userProvider';
-
-import useStorage from '../../logic/hooks/useStorage';
-
-import { firestore } from '../../logic/firebase';
 
 import {
     Main,
@@ -21,6 +18,8 @@ import {
     SuccessAlert,
 } from '../../design/styledComponents';
 
+const imageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+
 interface PropsType {
     openEdit: (open: boolean) => void;
 }
@@ -30,11 +29,9 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
 
     const [username, setUsername] = useState('');
     const [description, setDescription] = useState('');
-    const [file, setFile] = useState<File | null>(null);
+    const [fileUrl, setFileUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [saved, setSaved] = useState<boolean>(false);
-
-    const types = ['image/png', 'image/jpeg', 'image/jpg'];
 
     useEffect(() => {
         let name = '';
@@ -49,24 +46,35 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
         setDescription(descriptionText);
     }, [user]);
 
-    const { progress, url, uploadImage } = useStorage(file);
+    const handleImageChange = useCallback(
+        (selectedFile: File | null) => {
+            if (selectedFile) {
+                if (imageTypes.includes(selectedFile.type)) {
+                    const maxAllowSize = 5 * 1024 * 1024;
+                    if (selectedFile.size > maxAllowSize) {
+                        setError('Image is too big! Maximum size is 5MB.');
+                    } else {
+                        const storageRef = storage.ref(`avatars/${user?.uid}`);
 
-    const handleImageChange = (selectedFile: File | null) => {
-        if (selectedFile) {
-            if (types.includes(selectedFile.type)) {
-                const maxAllowSize = 5 * 1024 * 1024;
-                if (selectedFile.size > maxAllowSize) {
-                    setError('Image is too big! Maximum size is 5MB.');
+                        storageRef.put(selectedFile).on(
+                            'state_changed',
+                            () => {},
+                            (err) => {
+                                setError(err.message);
+                            },
+                            async () => {
+                                const downloadUrl = await storageRef.getDownloadURL();
+                                setFileUrl(downloadUrl);
+                            },
+                        );
+                    }
                 } else {
-                    setError(null);
-                    setFile(selectedFile);
+                    setError('Please use only select an image file (png or jpg)');
                 }
-            } else {
-                setFile(null);
-                setError('Please use only select an image file (png or jpg)');
             }
-        }
-    };
+        },
+        [user?.uid],
+    );
 
     const updateData = () => {
         firestore
@@ -75,6 +83,7 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
             .update({
                 username,
                 description,
+                avatar: fileUrl,
             })
             .then(() => {
                 setSaved(true);
@@ -103,10 +112,10 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
 
                 <FormGroup>
                     <Label>Profile picture</Label>
-                    {url && (
+                    {fileUrl && (
                         <img
                             style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                            src={url}
+                            src={fileUrl}
                             alt=""
                         />
                     )}
@@ -117,15 +126,6 @@ const ProfileEdit: React.FC<PropsType> = ({ openEdit }) => {
                             handleImageChange(e?.target?.files ? e?.target?.files[0] : null)
                         }
                     />
-                    {file && (
-                        <SuccessButton
-                            block={false}
-                            onClick={() => uploadImage('avatars', user?.uid ? user.uid : '')}
-                        >
-                            Save image{' '}
-                        </SuccessButton>
-                    )}
-                    {file && progress > 0 && progress < 100 && <p>{`${progress}% uploaded`}</p>}
                 </FormGroup>
 
                 <FormGroup>
